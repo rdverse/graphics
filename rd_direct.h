@@ -14,7 +14,25 @@ class REDirect: public RenderEngine
 {
  public:
   // Only methods inherited from the RenderEngine class should be added here,
-  // as needed.
+//  // as needed.
+int rd_display(const string & name, const string & type,
+			 const string & mode);
+
+int rd_format(int xresolution, int yresolution);
+
+int rd_world_begin(void);
+
+int rd_world_end(void);
+
+int rd_frame_begin(int frame_no);
+
+int rd_frame_end(void);
+
+ int rd_render_init(void);  /* Initialize renderer */
+
+ int rd_render_cleanup(void);
+
+
 };
 
 #endif /* RD_ENGINE_DIRECT_H */

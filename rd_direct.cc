@@ -1,12 +1,17 @@
 #include "rd_direct.h"
 #include "rd_error.h"
+#include "rd_display.h"
 
 #include <string>
 using std::string;
 
+// global variable to store frame_no
+int frame_number;
+
 //General Functions
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
 {
+
     return RD_OK;
 }
 
@@ -17,15 +22,19 @@ int REDirect::rd_format(int xresolution, int yresolution)
 
 int REDirect::rd_world_begin(void)
 {
+    rd_disp_init_frame(frame_number);
     return RD_OK;
 }
 int REDirect::rd_world_end(void)
 {
+    rd_disp_end_frame();
     return RD_OK;
 }
 
 int REDirect::rd_frame_begin(int frame_no)
 {
+    // store the frame value in a global variable
+    frame_number = frame_no;
     return RD_OK;
 }
 int REDirect::rd_frame_end(void)

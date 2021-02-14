@@ -44,16 +44,16 @@ public:
       return(RD_OK);
   }
 
-  virtual int rd_render_init(void)  /* Initialize renderer */
-  {
-//      const float black_color[3] = {1,0,1};
-//      rd_set_background(black_color);
-      return(RD_OK);
-  }
-
-  virtual int rd_render_cleanup(void){
-      return(RD_OK);
-  }
+//  virtual int rd_render_init(void)  /* Initialize renderer */
+//  {
+////      const float black_color[3] = {1,0,1};
+////      rd_set_background(black_color);
+//      return(RD_OK);
+//  }
+//
+//  virtual int rd_render_cleanup(void){
+//      return(RD_OK);
+//  }
 
 
       virtual int rd_color(const float color[]){
@@ -66,17 +66,17 @@ public:
           return(RD_OK);
   }
 
-
-    /**********************   Camera  ******************************************/
 //
+//    /**********************   Camera  ******************************************/
+////
 //  virtual int rd_camera_eye(const float eyepoint[3]);
 //  virtual int rd_camera_at(const float atpoint[3]);
 //  virtual int rd_camera_up(const float up[3]);
 //  virtual int rd_camera_fov(float fov);
 //  virtual int rd_clipping(float znear, float zfar);
-//
-//  /**********************   Transformations **********************************/
-//
+////
+////  /**********************   Transformations **********************************/
+////
 //  virtual int rd_translate(const float offset[3]);
 //  virtual int rd_scale(const float scale_factor[3]);
 //  virtual int rd_rotate_xy(float angle);
@@ -86,9 +86,9 @@ public:
 //
 //  virtual int rd_xform_push(void);
 //  virtual int rd_xform_pop(void);
-//
-//  /**********************   Geometric Objects  *******************************/
-//
+////
+////  /**********************   Geometric Objects  *******************************/
+////
 //  virtual int rd_bezier_curve(const string & vertex_type,
 //			      int degree, const float * vertex);
 //
@@ -137,14 +137,14 @@ public:
 //  virtual int rd_torus(float radius1, float radius2,
 //		       float phimin, float phimax, float thetamax);
 //  virtual int rd_tube(const float start[3], const float end[3], float radius);
-//
-//
-//
-//  /********************  Lighting & Shading  ***************************/
-//
-  virtual int rd_background(const float color[]){
-      return(RD_OK);
-  }
+////
+////
+////
+////  /********************  Lighting & Shading  ***************************/
+////
+//  virtual int rd_background(const float color[]){
+//      return(RD_OK);
+//  }
 //  // red, green, blue by default
 //
 //
@@ -178,9 +178,9 @@ public:
 //
 //  virtual int rd_attribute_push(void);
 //  virtual int rd_attribute_pop(void);
-//
-//  /****************************   Mapping ******************************/
-//
+////
+////  /****************************   Mapping ******************************/
+////
 //  virtual int rd_map_border(const string & map_type,
 //			    const string & horizontal,
 //			    const string & vertical);
@@ -193,10 +193,10 @@ public:
 //			    const string & intra_level,
 //			    const string & inter_level);
 //  virtual int rd_map(const string & map_type, const string & label);
-//
-//
-//  /****************************  Options  **********************************/
-//
+////
+////
+////  /****************************  Options  **********************************/
+////
 //  virtual int rd_option_array(const string & name, int n, const float *values);
 //
 //  virtual int rd_option_bool(const string & name, bool flag);

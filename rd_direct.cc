@@ -1,3 +1,5 @@
+//added
+#include<iostream>
 #include "rd_direct.h"
 #include "rd_error.h"
 #include "rd_display.h"
@@ -6,7 +8,9 @@
 using std::string;
 
 // global variable to store frame_no
-int frame_number;
+ int frame_number;
+// store value of current color in global value
+const float* Color;
 
 //General Functions
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
@@ -17,28 +21,45 @@ int REDirect::rd_display(const string & name, const string & type, const string 
 
 int REDirect::rd_format(int xresolution, int yresolution)
 {
+    // store values of resolution in global variables, we might need them later
+    std::cout<<xresolution<<yresolution;
     return RD_OK;
 }
 
 int REDirect::rd_world_begin(void)
 {
-    rd_disp_init_frame(frame_number);
+    std::cout<<"Entered world loop";
+//    int status;
+    //rd_disp_init_frame();
+    rd_disp_init_display();
+    try{
+        //rd_disp_init_display();
+    }
+    catch(std::exception &e){
+        std::cerr<<RD_INPUT_DISPLAY_INITIALIZATION_ERROR;
+    }
+    std::cout<<"From the redirect block inititalizing the display";
+    rd_clear();
     return RD_OK;
 }
 int REDirect::rd_world_end(void)
 {
-    rd_disp_end_frame();
+    std::cout<<"world ended";
+    rd_disp_end_display();
     return RD_OK;
 }
 
 int REDirect::rd_frame_begin(int frame_no)
 {
     // store the frame value in a global variable
+  //  rd_disp_init_frame(frame_no);
     frame_number = frame_no;
+    std::cout<<"Frame number stored"<<frame_number;
     return RD_OK;
 }
 int REDirect::rd_frame_end(void)
 {
+    rd_disp_end_frame();
     return RD_OK;
 }
 
@@ -52,6 +73,28 @@ int REDirect::rd_render_cleanup(void)
 {
     return RD_OK;
 }
+
+int REDirect::rd_color(const float color[])
+{
+    // save color value in a global value
+    Color = color;
+    return RD_OK;
+}
+
+ int REDirect::rd_point(const float p[3]){
+//    const float drawing_colors[3] = {0.2,0.2,0.2};
+//  rd_write_pixel(10,10, drawing_colors);
+     return(RD_OK);
+}
+
+ int REDirect::rd_background(const float color[]){
+   //  rd_clear();
+    // std::cout<<color;
+     //const float color_black[3] = {1,0,0};
+     //rd_set_background(color);
+     return(RD_OK);
+ }
+
 
 /**********Camera*************************/
 //int REDirect::rd_camera_eye(const float eyepoint[3])
@@ -262,10 +305,7 @@ int REDirect::rd_render_cleanup(void)
 //}
 //// red, green, blue by default
 //
-//int REDirect::rd_color(const float color[])
-//{
-//    return RD_OK;
-//}
+
 //
 //int REDirect::rd_opacity(float opacity)
 //{

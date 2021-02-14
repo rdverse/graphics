@@ -8,12 +8,11 @@ Display "Point Test"  "Screen" "rgbsingle"
 # CameraEye 320 240 -240
 # CameraAt  320 240 0
 # CameraUp  0.0 -1.0 0.0
-
-# FrameBegin 1
-
+Background 1.0 0.0 1.0
+FrameBegin 1
 WorldBegin
-
-# Point 320 240 0
-
+Format 200 200
+#Color 0.1 0.1 0.1
+#Point 100 100 0
 WorldEnd
-# FrameEnd
+FrameEnd

@@ -1,6 +1,7 @@
 #ifndef RD_BASE_ENGINE_H
 #define RD_BASE_ENGINE_H
 #include "rd_error.h"
+//#include "rd_display.h"
 #include <string>
 using std::string;
 
@@ -12,6 +13,8 @@ public:
 //
   virtual int rd_display(const string & name, const string & type,
 			 const string & mode){
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
       return(RD_OK);
   }
 
@@ -20,6 +23,12 @@ public:
   }
 
   virtual int rd_world_begin(void){
+//      int status;
+//      status = rd_disp_init_display();
+//      std::cout<<status<<"From the engine block inititalizing the display";
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
+//      rd_clear();
       return(RD_OK);
   }
   virtual int rd_world_end(void){
@@ -27,6 +36,8 @@ public:
   }
 
   virtual int rd_frame_begin(int frame_no){
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
       return(RD_OK);
   }
   virtual int rd_frame_end(void){
@@ -35,6 +46,8 @@ public:
 
   virtual int rd_render_init(void)  /* Initialize renderer */
   {
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
       return(RD_OK);
   }
 
@@ -42,7 +55,19 @@ public:
       return(RD_OK);
   }
 
-  /**********************   Camera  ******************************************/
+
+      virtual int rd_color(const float color[]){
+          return(RD_INPUT_MAP_NOT_FOUND);
+      }
+
+      virtual int rd_point(const float p[3]){
+//          const float drawing_colors[3] = {0.2,0.2,0.2};
+//          rd_write_pixel(0,1, drawing_colors);
+          return(RD_OK);
+  }
+
+
+    /**********************   Camera  ******************************************/
 //
 //  virtual int rd_camera_eye(const float eyepoint[3]);
 //  virtual int rd_camera_at(const float atpoint[3]);
@@ -85,7 +110,6 @@ public:
 //			 int nvertex, const float * vertex,
 //			 int nseg, const int * seg);
 //
-//  virtual int rd_point(const float p[3]);
 //
 //  virtual int rd_pointset(const string & vertex_type,
 //			  int nvertex, const float * vertex);
@@ -118,10 +142,11 @@ public:
 //
 //  /********************  Lighting & Shading  ***************************/
 //
-//  virtual int rd_background(const float color[]);
+  virtual int rd_background(const float color[]){
+      return(RD_OK);
+  }
 //  // red, green, blue by default
 //
-//  virtual int rd_color(const float color[]);
 //
 //  virtual int rd_opacity(float opacity);
 //

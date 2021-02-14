@@ -1,6 +1,7 @@
 #ifndef PNM_DISPLAY_H
 #define PNM_DISPLAY_H
 
+
 #if defined (__cplusplus)
 extern "C"
 {

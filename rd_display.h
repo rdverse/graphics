@@ -8,7 +8,7 @@ using std::string;
 
 extern int display_xSize, display_ySize;
 
-extern const char * display_name;
+extern const char *display_name;
 
 /************************************************************************/
 /* Generic rendering functions.  When rd_set_display() is called, these

@@ -171,10 +171,10 @@ int REDirect::rd_render_cleanup(void)
 //}
 //
 //
-//int REDirect::rd_point(const float p[3])
-//{
-//    return RD_OK;
-//}
+int REDirect::rd_point(const float p[3])
+{
+    return RD_OK;
+}
 //
 //
 //int REDirect::rd_pointset(const string & vertex_type,
@@ -262,31 +262,26 @@ int REDirect::rd_render_cleanup(void)
 //
 //
 
-//int REDirect::rd_background(const float color[]) {
+int REDirect::rd_background(const float color[]) {
     //int status;
-//    rd_disp_init_frame(1);
-//    cout<<"Here is the color for the background : {}"<<color;
-//    screen_background_color[0] = color[0];
-//    screen_background_color[1] = color[1];
-//    screen_background_color[2] = color[2];
-//    // status = rd_set_background(screen_background_color);
-//    rd_set_background(screen_background_color);
-//    return(RD_OK);
-//}
+    rd_disp_init_frame(1);
+    cout<<"Here is the color for the background : {}"<<color;
+    screen_background_color = color;
+    // status = rd_set_background(screen_background_color);
+    rd_set_background(screen_background_color);
+    return(RD_OK);
+}
 
 //// red, green, blue by default
 //
-//int REDirect::rd_color(const float color[])
-//{
+int REDirect::rd_color(const float color[])
+{
     // store values of rg b in a flobal location as current drawing color/.
     // default is white
-//    cout<<"rd_Color in rd_direct  is accessed";
-//    current_drawing_color[0] = color[0];
-//    current_drawing_color[1] = color[1];
-//    current_drawing_color[2] = color[2];
-
-//    return RD_OK;
-//}
+    cout<<"rd_Color in rd_direct  is accessed";
+    current_drawing_color = color;
+    return RD_OK;
+}
 //
 //int REDirect::rd_opacity(float opacity)
 //{

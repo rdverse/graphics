@@ -1,10 +1,13 @@
 #ifndef PNM_DISPLAY_H
 #define PNM_DISPLAY_H
+//extern int * image;
 
 #if defined (__cplusplus)
 extern "C"
+
 {
 #endif
+
 
   int pnm_init_display(void);
 

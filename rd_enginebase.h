@@ -2,7 +2,14 @@
 #define RD_BASE_ENGINE_H
 #include "rd_error.h"
 #include <string>
+#include<iostream>
 using std::string;
+
+
+extern int frame_number;
+// this will be by default white
+// used to store the color of current drawing color
+
 
 class RenderEngine
 {
@@ -118,10 +125,16 @@ public:
 //
 //  /********************  Lighting & Shading  ***************************/
 //
-//  virtual int rd_background(const float color[]);
-//  // red, green, blue by default
+//  virtual int rd_background(const float color[]){
+//        return(RD_OK);
+//    }
+// //   red, green, blue by default
 //
-//  virtual int rd_color(const float color[]);
+
+//virtual int rd_color(const float color[]);//{
+      //std::cout<<"rd_Color in engine base is accessed";
+     // return(RD_OK);
+  //}
 //
 //  virtual int rd_opacity(float opacity);
 //
@@ -189,7 +202,7 @@ public:
 
 
 // Some useful helper functions
-//int get_vertex_size(const string & vertex_type);
+// int get_vertex_size(const string & vertex_type);
 // Returns the number of components in an attributed vertex type
 
 #endif /* RD_BASE_ENGINE_H */

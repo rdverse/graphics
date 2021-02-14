@@ -2,13 +2,17 @@
 #define RD_ENGINE_DIRECT_H
 
 #include "rd_enginebase.h"
-
+#include "rd_display.h"
 #include <string>
 using std::string;
 
 // This is a rendering engine that renders directly to the image buffer as
 // primitives come in.  A depth buffer is obviously needed.  Transparency is
 // not properly handled.
+
+// float current_drawing_color[] = {0.5, 0.5,1};
+// float screen_background_color[] = {1, 0.5,1};
+
 
 class REDirect: public RenderEngine
 {
@@ -31,6 +35,12 @@ int rd_frame_end(void);
  int rd_render_init(void);  /* Initialize renderer */
 
  int rd_render_cleanup(void);
+
+// int rd_background(const float color[]);
+//
+// int rd_color(const float color[]);
+//
+// int rd_point(const float p[3]);
 
 
 };

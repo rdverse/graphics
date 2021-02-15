@@ -169,6 +169,7 @@ int REDirect::rd_line(const float start[3], const float end[3]){
         } else if (p>0){
             y = y + 1;
             p = p + (2*dy - 2*dx);
+
         }
         else{
             std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;

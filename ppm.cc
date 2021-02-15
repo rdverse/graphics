@@ -26,7 +26,7 @@ int main()
 	{
 	  out.put(int(((float)x/XSIZE)*255)); // Red
 	  out.put(int(((float)y/YSIZE)*255)); // Green
-	  out.put(255); // Blue
+	  out.put(0.4); // Blue
 	}
     }
 

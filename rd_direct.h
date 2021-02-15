@@ -35,7 +35,15 @@ int rd_frame_end(void);
  int rd_color(const float color[]);
 
  int rd_point(const float p[3]);
+
  int rd_background(const float color[]);
+
+ int rd_line(const float start[3], const float end[3]);
+
+ int rd_circle(const float center[3], float radius);
+
+ int rd_fill(const float seed_point[3]);
+
 
 //
 //    /**********************   Camera  ******************************************/
@@ -74,7 +82,6 @@ int rd_frame_end(void);
 //
 //     int rd_circle(const float center[3], float radius);
 //
-//     int rd_line(const float start[3], const float end[3]);
 //
 //     int rd_lineset(const string & vertex_type,
 //                           int nvertex, const float * vertex,

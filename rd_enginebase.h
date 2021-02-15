@@ -1,7 +1,7 @@
 #ifndef RD_BASE_ENGINE_H
 #define RD_BASE_ENGINE_H
 #include "rd_error.h"
-//#include "rd_display.h"
+#include "rd_display.h"
 #include <string>
 using std::string;
 
@@ -44,36 +44,49 @@ public:
       return(RD_OK);
   }
 
-//  virtual int rd_render_init(void)  /* Initialize renderer */
-//  {
-////      const float black_color[3] = {1,0,1};
-////      rd_set_background(black_color);
-//      return(RD_OK);
-//  }
-//
-//  virtual int rd_render_cleanup(void){
-//      return(RD_OK);
-//  }
-
-
-      virtual int rd_color(const float color[]){
-          return(RD_INPUT_MAP_NOT_FOUND);
-      }
-
-      virtual int rd_point(const float p[3]){
-//          const float drawing_colors[3] = {0.2,0.2,0.2};
-//          rd_write_pixel(0,1, drawing_colors);
-          return(RD_OK);
+  virtual int rd_render_init(void)  /* Initialize renderer */
+  {
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
+      return(RD_OK);
   }
 
-//
+  virtual int rd_render_cleanup(void){
+      return(RD_OK);
+  }
+
+  virtual int rd_background(const float color[]){
+    //  const float color_black[3] = {100,0,0};
+      //    std::cout<<color;
+      //  rd_clear();
+      //const float* backgroundColor = (const float*)color_black;
+
+      //return(rd_set_background(backgroundColor));
+      return(RD_OK);
+  }
+
+      virtual int rd_color(const float color[]){
+          return(RD_OK);
+      }
+
+//      virtual int rd_point(const float p[3])//{
+//          const float drawing_colors[3] = {0.2,0.2,0.2};
+//          rd_write_pixel(0,1, drawing_colors);
+          //return(RD_OK);
+//  }
+
+    virtual int rd_circle(const float center[3], float radius);
+
+    virtual int rd_fill(const float seed_point[3]);
+
+    //
 //    /**********************   Camera  ******************************************/
 ////
-//  virtual int rd_camera_eye(const float eyepoint[3]);
-//  virtual int rd_camera_at(const float atpoint[3]);
-//  virtual int rd_camera_up(const float up[3]);
-//  virtual int rd_camera_fov(float fov);
-//  virtual int rd_clipping(float znear, float zfar);
+  virtual int rd_camera_eye(const float eyepoint[3]);
+  virtual int rd_camera_at(const float atpoint[3]);
+  virtual int rd_camera_up(const float up[3]);
+  virtual int rd_camera_fov(float fov);
+  virtual int rd_clipping(float znear, float zfar);
 ////
 ////  /**********************   Transformations **********************************/
 ////
@@ -102,7 +115,6 @@ public:
 //				   int * crease_list, int ncrease,
 //				   float *sharpness);
 //
-//  virtual int rd_circle(const float center[3], float radius);
 //
 //  virtual int rd_line(const float start[3], const float end[3]);
 //
@@ -142,9 +154,7 @@ public:
 ////
 ////  /********************  Lighting & Shading  ***************************/
 ////
-//  virtual int rd_background(const float color[]){
-//      return(RD_OK);
-//  }
+
 //  // red, green, blue by default
 //
 //
@@ -152,7 +162,6 @@ public:
 //
 //  virtual int rd_emission(const float color[], float intensity);
 //
-//  virtual int rd_fill(const float seed_point[3]);
 //
 //  virtual int rd_surface(const string & shader_type);
 //

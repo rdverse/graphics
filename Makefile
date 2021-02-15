@@ -1,5 +1,5 @@
 CC = g++
-CCFLAGS = -g -Wall
+CCFLAGS = -g -Wall 
 
 rd_view: libcs631.a rd_direct.o pnm_display.o
 	$(CC) -o rd_view $(CCFLAGS) libcs631.a rd_direct.o pnm_display.o -lm -lX11

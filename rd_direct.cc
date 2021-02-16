@@ -8,12 +8,13 @@
 using std::string;
 
 // global variable to store frame_no
- int frame_number;
+int frame_number;
 // store value of current color in global value
-const float* Color;
+float DrawColor[3] = {0.0, 0.0, 0.0};
 //const float color_black[3] = {100,0,0};
 //const int X_resolution;
 //const int Y_resolution;
+float BackgroundColor[3] = {1.0 ,  1.0 , 1.0};
 
 
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
@@ -89,35 +90,36 @@ int REDirect::rd_render_cleanup(void)
 
 int REDirect::rd_color(const float color[])
 {
-//     float testreturn[3] = {0,0,0};
-//    rd_write_pixel(10,10, testreturn);
-//    // save color value in a global value
-    Color = color;
+    // Copy the color contents into global drawColor
+    DrawColor[0] = color[0];
+    DrawColor[1] = color[1];
+    DrawColor[2] = color[2];
     return RD_OK;
 }
 
  int REDirect::rd_point(const float p[3]){
-    const float drawing_colors[3] = {0.2,1.0,0.2};
-     // std::cout<<"POints to be pltted  :"<<p[0]<<" "<<p[1]<<" "<<p[2];
-    // write pixel using current drawing color
-        //Color = (const float *)drawing_colors;
-     rd_write_pixel(10,10, &drawing_colors[0]);
-     return(rd_write_pixel(10,10, &drawing_colors[0]));
+    // ONly have to write the pixel at the given co-ordinates
+    return(rd_write_pixel(p[0],p[1], &DrawColor[0]));
 }
 
- int REDirect::rd_background(const float color[]){
-   //  rd_clear();
-    // std::cout<<color;
+ int REDirect::rd_background(const float color[]) {
+    BackgroundColor[0] = color[0];
+     BackgroundColor[0] = color[1];
+     BackgroundColor[0] = color[2];
+    return (rd_set_background(&BackgroundColor[0]));
+}
+
+     //  rd_clear();
+     // std::cout<<color;
 
 //    typedef int(*)(int, int, const float*)
 
-   //    std::cout<<color;
-   //  rd_clear();
-   // const float* backgroundColor = (const float*)color_black;
-     const float color_black[3] = {0.5,0.5,0.9};
-   //  const float drawing_colors[3] = {0.2,1.0,0.2};
- //       int a;
-  //   a =rd_write_pixel(10,10, &drawing_colors[0]);
+     //    std::cout<<color;
+     //  rd_clear();
+     // const float* backgroundColor = (const float*)color_black;
+     //  const float drawing_colors[3] = {0.2,1.0,0.2};
+     //       int a;
+     //   a =rd_write_pixel(10,10, &drawing_colors[0]);
 //     a =rd_write_pixel(0,2, &drawing_colors[0]);
 //
 //     a =rd_write_pixel(0,3, &drawing_colors[0]);
@@ -126,21 +128,20 @@ int REDirect::rd_color(const float color[])
 //
 //     a =rd_write_pixel(0,5, &drawing_colors[0]);
 //
- //   rd_point(color_black);
+     //   rd_point(color_black);
 //     rd_set_background(&color_black[0]);
-    // rd_clear();
+     // rd_clear();
 //     a = rd_write_pixel(0,6, &drawing_colors[0]);
-  //   std::cout<<a;
-  //const float points[3] = {1,2,3};
-  //rd_clear();
-  //std::cout<<REDirect::rd_point(points);
-     return(rd_set_background(&color_black[0]));
+     //   std::cout<<a;
+     //const float points[3] = {1,2,3};
+     //rd_clear();
+     //std::cout<<REDirect::rd_point(points);
 
      // rd_clear();
 //    return(RD_OK);
 //backgroundfunc()
-return(RD_OK);
-}
+
+
 
 
 int REDirect::rd_line(const float start[3], const float end[3]){
@@ -160,7 +161,7 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     float p;
 
     while(x<xe){
-        rd_write_pixel(int(x), int(y), Color);
+        rd_write_pixel(int(x), int(y), DrawColor);
         x++;
         p = po;
         if(p<0){
@@ -175,7 +176,6 @@ int REDirect::rd_line(const float start[3], const float end[3]){
             std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;
         }
     }
-
     return(RD_OK);
 }
 
@@ -188,7 +188,7 @@ int REDirect::rd_circle(const float center[3], float radius)
     float p = po;
 
     while(x<y){
-        rd_write_pixel(int(x),int(y),Color);
+        rd_write_pixel(int(x),int(y),DrawColor);
         x++;
         if(p<0){
             p = p + 2*x +1;
@@ -209,8 +209,8 @@ int REDirect::rd_circle(const float center[3], float radius)
     float x = seed_point[0];
     float y = seed_point[1];
 
-     const float* fill_color = Color;
-     const float* seed_color = Color;
+     const float* fill_color = DrawColor;
+     const float* seed_color = DrawColor;
              //rd_read_pixel(x, y, fill_color);
 
      if(seed_color == fill_color) {

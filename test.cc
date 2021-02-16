@@ -52,17 +52,24 @@ public:
 	}
 };
 
+
+void foo3(const float rgb[]){
+   std::cout<<rgb[0]<<rgb[1]<<rgb[2];
+
+}
+
 int main(void)
 {
-	Shape* s;
-	Square sq(5, 5); // making object of child class Sqaure
-	Rectangle rec(
-		4, 5); // making object of child class Rectangle
-
-	s = &sq;
-	s->get_Area();
-	s = &rec;
-	s->get_Area();
-
-	return 0;
+//	Shape* s;
+//	Square sq(5, 5); // making object of child class Sqaure
+//	Rectangle rec(
+//		4, 5); // making object of child class Rectangle
+//
+//	s = &sq;
+//	s->get_Area();
+//	s = &rec;
+//	s->get_Area();
+const float arr[3] = {0.4,0.2,0.8};
+foo3(arr);
+ 	return 0;
 }

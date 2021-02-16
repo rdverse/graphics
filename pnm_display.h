@@ -1,6 +1,7 @@
 #ifndef PNM_DISPLAY_H
 #define PNM_DISPLAY_H
 
+
 #if defined (__cplusplus)
 extern "C"
 {
@@ -10,7 +11,7 @@ extern "C"
 
   int pnm_end_display(void);
 
-  int pnm_init_frame(int);
+  int pnm_init_frame(int frame_no);
 
   int pnm_end_frame(void);
 

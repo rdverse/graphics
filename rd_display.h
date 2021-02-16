@@ -7,13 +7,16 @@ using std::string;
 /* Global values set automatically */
 
 extern int display_xSize, display_ySize;
-
+//extern int total_colors = 3;
 extern const char * display_name;
-
+const float* backgroundColors;
 /************************************************************************/
 /* Generic rendering functions.  When rd_set_display() is called, these
    functions will be connected with the appropriate drivers. */
 /************************************************************************/
+
+//extern is used here to make these functions available throughout.
+// function pointers , take arguments if any and return an int (my guess is that is the error code!)
 
 extern int (* rd_disp_init_display)(void);
 /* To initialize the display.  When this function is called, the global
@@ -37,6 +40,7 @@ extern int (* rd_write_pixel)(int x, int y, const float rgb []);
    green in 1; and blue in 2. x and y are in the range from 0 up to 
    but not including display_xSize and display_ySize respectively.*/
 
+// Check with this function, why is not returning color and istead expects color?
 extern int (* rd_read_pixel)(int x, int y, float rgb []);
 /* Reads the color at location (x, y) into r, g, and b.   Color component 
    values are in the range 0.0-1.0. Red, green, and blue are read into

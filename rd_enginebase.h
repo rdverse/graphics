@@ -1,6 +1,7 @@
 #ifndef RD_BASE_ENGINE_H
 #define RD_BASE_ENGINE_H
 #include "rd_error.h"
+#include "rd_display.h"
 #include <string>
 using std::string;
 
@@ -12,6 +13,8 @@ public:
 //
   virtual int rd_display(const string & name, const string & type,
 			 const string & mode){
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
       return(RD_OK);
   }
 
@@ -20,6 +23,12 @@ public:
   }
 
   virtual int rd_world_begin(void){
+//      int status;
+//      status = rd_disp_init_display();
+//      std::cout<<status<<"From the engine block inititalizing the display";
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
+//      rd_clear();
       return(RD_OK);
   }
   virtual int rd_world_end(void){
@@ -27,6 +36,8 @@ public:
   }
 
   virtual int rd_frame_begin(int frame_no){
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
       return(RD_OK);
   }
   virtual int rd_frame_end(void){
@@ -35,6 +46,8 @@ public:
 
   virtual int rd_render_init(void)  /* Initialize renderer */
   {
+//      const float black_color[3] = {1,0,1};
+//      rd_set_background(black_color);
       return(RD_OK);
   }
 
@@ -42,16 +55,41 @@ public:
       return(RD_OK);
   }
 
-  /**********************   Camera  ******************************************/
-//
-//  virtual int rd_camera_eye(const float eyepoint[3]);
-//  virtual int rd_camera_at(const float atpoint[3]);
-//  virtual int rd_camera_up(const float up[3]);
-//  virtual int rd_camera_fov(float fov);
-//  virtual int rd_clipping(float znear, float zfar);
-//
-//  /**********************   Transformations **********************************/
-//
+  virtual int rd_background(const float color[]){
+    //  const float color_black[3] = {100,0,0};
+      //    std::cout<<color;
+      //  rd_clear();
+      //const float* backgroundColor = (const float*)color_black;
+
+      //return(rd_set_background(backgroundColor));
+      return(RD_OK);
+  }
+
+      virtual int rd_color(const float color[]){
+          return(RD_OK);
+      }
+
+//      virtual int rd_point(const float p[3])//{
+//          const float drawing_colors[3] = {0.2,0.2,0.2};
+//          rd_write_pixel(0,1, drawing_colors);
+          //return(RD_OK);
+//  }
+
+    virtual int rd_circle(const float center[3], float radius);
+
+    virtual int rd_fill(const float seed_point[3]);
+
+    //
+//    /**********************   Camera  ******************************************/
+////
+  virtual int rd_camera_eye(const float eyepoint[3]);
+  virtual int rd_camera_at(const float atpoint[3]);
+  virtual int rd_camera_up(const float up[3]);
+  virtual int rd_camera_fov(float fov);
+  virtual int rd_clipping(float znear, float zfar);
+////
+////  /**********************   Transformations **********************************/
+////
 //  virtual int rd_translate(const float offset[3]);
 //  virtual int rd_scale(const float scale_factor[3]);
 //  virtual int rd_rotate_xy(float angle);
@@ -61,9 +99,9 @@ public:
 //
 //  virtual int rd_xform_push(void);
 //  virtual int rd_xform_pop(void);
-//
-//  /**********************   Geometric Objects  *******************************/
-//
+////
+////  /**********************   Geometric Objects  *******************************/
+////
 //  virtual int rd_bezier_curve(const string & vertex_type,
 //			      int degree, const float * vertex);
 //
@@ -77,7 +115,6 @@ public:
 //				   int * crease_list, int ncrease,
 //				   float *sharpness);
 //
-//  virtual int rd_circle(const float center[3], float radius);
 //
 //  virtual int rd_line(const float start[3], const float end[3]);
 //
@@ -85,7 +122,6 @@ public:
 //			 int nvertex, const float * vertex,
 //			 int nseg, const int * seg);
 //
-//  virtual int rd_point(const float p[3]);
 //
 //  virtual int rd_pointset(const string & vertex_type,
 //			  int nvertex, const float * vertex);
@@ -113,21 +149,19 @@ public:
 //  virtual int rd_torus(float radius1, float radius2,
 //		       float phimin, float phimax, float thetamax);
 //  virtual int rd_tube(const float start[3], const float end[3], float radius);
-//
-//
-//
-//  /********************  Lighting & Shading  ***************************/
-//
-//  virtual int rd_background(const float color[]);
+////
+////
+////
+////  /********************  Lighting & Shading  ***************************/
+////
+
 //  // red, green, blue by default
 //
-//  virtual int rd_color(const float color[]);
 //
 //  virtual int rd_opacity(float opacity);
 //
 //  virtual int rd_emission(const float color[], float intensity);
 //
-//  virtual int rd_fill(const float seed_point[3]);
 //
 //  virtual int rd_surface(const string & shader_type);
 //
@@ -153,9 +187,9 @@ public:
 //
 //  virtual int rd_attribute_push(void);
 //  virtual int rd_attribute_pop(void);
-//
-//  /****************************   Mapping ******************************/
-//
+////
+////  /****************************   Mapping ******************************/
+////
 //  virtual int rd_map_border(const string & map_type,
 //			    const string & horizontal,
 //			    const string & vertical);
@@ -168,10 +202,10 @@ public:
 //			    const string & intra_level,
 //			    const string & inter_level);
 //  virtual int rd_map(const string & map_type, const string & label);
-//
-//
-//  /****************************  Options  **********************************/
-//
+////
+////
+////  /****************************  Options  **********************************/
+////
 //  virtual int rd_option_array(const string & name, int n, const float *values);
 //
 //  virtual int rd_option_bool(const string & name, bool flag);

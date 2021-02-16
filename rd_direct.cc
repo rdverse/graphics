@@ -1,35 +1,78 @@
+//added
+#include<iostream>
 #include "rd_direct.h"
 #include "rd_error.h"
+#include "rd_display.h"
 
 #include <string>
 using std::string;
 
-//General Functions
+// global variable to store frame_no
+ int frame_number;
+// store value of current color in global value
+const float* Color;
+//const float color_black[3] = {100,0,0};
+//const int X_resolution;
+//const int Y_resolution;
+
+
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
 {
+    // Nothing to implement in this function, everthing is done behind the scenes
     return RD_OK;
 }
 
 int REDirect::rd_format(int xresolution, int yresolution)
 {
+
+    // store values of resolution in global variables. This is required in pnm
+     std::cout<<xresolution<<yresolution;
     return RD_OK;
 }
 
-int REDirect::rd_world_begin(void)
-{
-    return RD_OK;
-}
-int REDirect::rd_world_end(void)
-{
-    return RD_OK;
-}
 
 int REDirect::rd_frame_begin(int frame_no)
 {
+    // Store the frame value in a global variable
+   // rd_disp_init_frame(frame_number);
+    frame_number = frame_no;
+    //Calling world begin or init frame will give error
     return RD_OK;
 }
+
+int REDirect::rd_world_begin(void) {
+    //initialize display for new image, use below function
+    // float testreturn[3] = {0,0,0};
+    // rd_write_pixel(10,10, testreturn);
+    //rd_print_error(RD_OK, "s01.rd");
+    try {
+//        rd_disp_init_frame(frame_number);
+//        rd_clear();
+        return (rd_disp_init_frame(frame_number));
+    }
+    catch (std::exception &e) {
+        std::cerr << RD_INPUT_DISPLAY_INITIALIZATION_ERROR;
+        return (RD_INPUT_DISPLAY_INITIALIZATION_ERROR);
+    }
+}
+
+int REDirect::rd_world_end(void)
+    {
+   // Finish off the display
+        try {
+            return (rd_disp_end_frame());
+        }
+        catch (std::exception &e) {
+            std::cerr << RD_INPUT_UNINITIALIZED_DISPLAY;
+            return (RD_INPUT_UNINITIALIZED_DISPLAY);
+        }
+   // just end frame, dont end display here, giving error
+}
+
+
 int REDirect::rd_frame_end(void)
 {
+ //   same as rd_world_end, have one call the other
     return RD_OK;
 }
 
@@ -44,7 +87,153 @@ int REDirect::rd_render_cleanup(void)
     return RD_OK;
 }
 
-/**********Camera*************************/
+int REDirect::rd_color(const float color[])
+{
+//     float testreturn[3] = {0,0,0};
+//    rd_write_pixel(10,10, testreturn);
+//    // save color value in a global value
+    Color = color;
+    return RD_OK;
+}
+
+ int REDirect::rd_point(const float p[3]){
+    const float drawing_colors[3] = {0.2,1.0,0.2};
+     // std::cout<<"POints to be pltted  :"<<p[0]<<" "<<p[1]<<" "<<p[2];
+    // write pixel using current drawing color
+        //Color = (const float *)drawing_colors;
+     rd_write_pixel(10,10, &drawing_colors[0]);
+     return(rd_write_pixel(10,10, &drawing_colors[0]));
+}
+
+ int REDirect::rd_background(const float color[]){
+   //  rd_clear();
+    // std::cout<<color;
+
+//    typedef int(*)(int, int, const float*)
+
+   //    std::cout<<color;
+   //  rd_clear();
+   // const float* backgroundColor = (const float*)color_black;
+     const float color_black[3] = {0.5,0.5,0.9};
+   //  const float drawing_colors[3] = {0.2,1.0,0.2};
+ //       int a;
+  //   a =rd_write_pixel(10,10, &drawing_colors[0]);
+//     a =rd_write_pixel(0,2, &drawing_colors[0]);
+//
+//     a =rd_write_pixel(0,3, &drawing_colors[0]);
+//
+//     a =rd_write_pixel(0,4, &drawing_colors[0]);
+//
+//     a =rd_write_pixel(0,5, &drawing_colors[0]);
+//
+ //   rd_point(color_black);
+//     rd_set_background(&color_black[0]);
+    // rd_clear();
+//     a = rd_write_pixel(0,6, &drawing_colors[0]);
+  //   std::cout<<a;
+  //const float points[3] = {1,2,3};
+  //rd_clear();
+  //std::cout<<REDirect::rd_point(points);
+     return(rd_set_background(&color_black[0]));
+
+     // rd_clear();
+//    return(RD_OK);
+//backgroundfunc()
+return(RD_OK);
+}
+
+
+int REDirect::rd_line(const float start[3], const float end[3]){
+    float xs = start[0];
+    float ys = start[1];
+
+    float xe = end[0];
+    float ye = end[1];
+
+    float x = xs;
+    float y = ys;
+
+    float dx = xe - xs;
+    float dy = ye - ys;
+
+    float po = 2*dx - 2*dy;
+    float p;
+
+    while(x<xe){
+        rd_write_pixel(int(x), int(y), Color);
+        x++;
+        p = po;
+        if(p<0){
+            //y = y;
+            p = p + 2*dy;
+        } else if (p>0){
+            y = y + 1;
+            p = p + (2*dy - 2*dx);
+
+        }
+        else{
+            std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;
+        }
+    }
+
+    return(RD_OK);
+}
+
+int REDirect::rd_circle(const float center[3], float radius)
+{
+    float po = 1 - radius;
+    float x = center[0];
+    float y = center[1];
+
+    float p = po;
+
+    while(x<y){
+        rd_write_pixel(int(x),int(y),Color);
+        x++;
+        if(p<0){
+            p = p + 2*x +1;
+        }
+        else if(p>0){
+            p = p + (2*x - 2*y + 3);
+            y--;
+        }
+        else{
+            std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;
+        }
+    }
+    return RD_OK;
+}
+
+ int REDirect::rd_fill(const float seed_point[3]){
+
+    float x = seed_point[0];
+    float y = seed_point[1];
+
+     const float* fill_color = Color;
+     const float* seed_color = Color;
+             //rd_read_pixel(x, y, fill_color);
+
+     if(seed_color == fill_color) {
+
+         rd_write_pixel(x, y, fill_color);
+        // implement boundary checking later when this command works
+        // Following the name convention of WASD as arrow indications for the four point fill algorithm
+        const float D[3] = {x+1,y,0};
+         const float A[3] = {x-1,y,0};
+         const float W[3] = {x,y+1,0};
+         const float S[3] = {x,y-1,0};
+         rd_fill(D);
+         rd_fill(A);
+         rd_fill(W);
+         rd_fill(S);
+     }
+    return(RD_OK);
+}
+
+
+
+
+///**********Camera*************************/
 //int REDirect::rd_camera_eye(const float eyepoint[3])
 //{
 //    return RD_OK;
@@ -65,9 +254,9 @@ int REDirect::rd_render_cleanup(void)
 //{
 //    return RD_OK;
 //}
-//
-//
-///**********************   Transformations **********************************/
+
+////
+/////**********************   Transformations **********************************/
 //
 //int REDirect::rd_translate(const float offset[3])
 //{
@@ -109,8 +298,8 @@ int REDirect::rd_render_cleanup(void)
 //{
 //    return RD_OK;
 //}
-//
-///**********************   Geometric Objects  *******************************/
+////
+/////**********************   Geometric Objects  *******************************/
 //
 //int REDirect::rd_bezier_curve(const string & vertex_type,
 //                    int degree, const float * vertex)
@@ -137,16 +326,10 @@ int REDirect::rd_render_cleanup(void)
 //}
 //
 //
-//int REDirect::rd_circle(const float center[3], float radius)
-//{
-//    return RD_OK;
-//}
+
 //
 //
-//int REDirect::rd_line(const float start[3], const float end[3])
-//{
-//    return RD_OK;
-//}
+
 //
 //
 //int REDirect::rd_lineset(const string & vertex_type,
@@ -157,10 +340,10 @@ int REDirect::rd_render_cleanup(void)
 //}
 //
 //
-//int REDirect::rd_point(const float p[3])
-//{
-//    return RD_OK;
-//}
+////int REDirect::rd_point(const float p[3])
+////{
+////    return RD_OK;
+////}
 //
 //
 //int REDirect::rd_pointset(const string & vertex_type,
@@ -244,19 +427,16 @@ int REDirect::rd_render_cleanup(void)
 //
 //
 //
-///********************  Lighting & Shading  ***************************/
+/////********************  Lighting & Shading  ***************************/
+////
+////
+////int REDirect::rd_background(const float color[])
+////{
+////    return RD_OK;
+////}
+////// red, green, blue by default
+////
 //
-//
-//int REDirect::rd_background(const float color[])
-//{
-//    return RD_OK;
-//}
-//// red, green, blue by default
-//
-//int REDirect::rd_color(const float color[])
-//{
-//    return RD_OK;
-//}
 //
 //int REDirect::rd_opacity(float opacity)
 //{
@@ -369,7 +549,7 @@ int REDirect::rd_render_cleanup(void)
 //
 //
 //
-///****************************  Options  **********************************/
+/////****************************  Options  **********************************/
 //
 //int REDirect::rd_option_array(const string & name, int n, const float *values)
 //{

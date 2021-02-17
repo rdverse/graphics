@@ -1,16 +1,16 @@
 # This is a test/example rd file
 
-Display "EdgeTest"  "PNM" "rgb"
-Format 400 400 
+Display "EdgeTest" "Screen" "rgbsingle"
+Format 1000 1000
 
 # Testing filling at edges
 
 Background 0.9 0.9 0.9
 
 # The next three lines will be ignored by your renderer
-CameraEye 200 200 -200
-CameraAt  200 200 0
-CameraUp  0.0 -1.0 0.0
+# CameraEye 200 200 -200
+# CameraAt  200 200 0
+# CameraUp  0.0 -1.0 0.0
 
 FrameBegin 1
 
@@ -44,22 +44,22 @@ Line 395 399 0 0 5 0
 Line 295 399 0 95 0 0
 Line 305 399 0 105 0 0 
 
-Color 1.0 0.5 0.5
+Color 0.5 0.5 0.5
 Fill 250 5 0
 
-Color 1.0 0.7 0.5
+Color 1.0 1.0 1.0
 Fill 395 50 0
 
-Color 1.0 1.0 0.5
+Color 0.1 0.1 0.7
 Fill 395 250 0
 
-Color 0.8 1.0 0.5
+Color 0.0 0.0 1.0
 Fill 350 395 0
 
-Color 0.5 1.0 0.5
+Color 1.0 0.0 0.0
 Fill 150 395 0
 
-Color 0.5 1.0 0.7
+Color 0.0 1.0 0.0
 Fill 5 350 0
 
 Color 0.5 1.0 1.0

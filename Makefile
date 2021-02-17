@@ -15,4 +15,3 @@ pnm_display.o: pnm_display.cc pnm_display.h
 
 clean:
 	-rm *.o rd_view
-

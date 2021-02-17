@@ -24,6 +24,7 @@ int main()
     {
       for(int x = 0; x < XSIZE; x++)
 	{
+          std::cout<<int(((float)x/XSIZE)*255)<<" ";
 	  out.put(int(((float)x/XSIZE)*255)); // Red
 	  out.put(int(((float)y/YSIZE)*255)); // Green
 	  out.put(0.4); // Blue

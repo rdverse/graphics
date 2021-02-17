@@ -6,16 +6,16 @@ Format 640 480
 # Testing line drawing
 
 # The next three lines will be ignored by your renderer
-CameraEye 320 240 -240
-CameraAt  320 240 0
-CameraUp  0.0 -1.0 0.0
+# CameraEye 320 240 -240
+# CameraAt  320 240 0
+# CameraUp  0.0 -1.0 0.0
 
 FrameBegin 1
 WorldBegin
 
 # This line will also be ignored by your renderer
 #Translate 0.5 0.5 0.0
-
+# Color 1.0 0 0
 Line 324 240 0  440 240 0
 Line 324 242 0  440 300 0
 Line 324 244 0  440 360 0

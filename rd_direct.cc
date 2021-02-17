@@ -3,6 +3,7 @@
 #include "rd_direct.h"
 #include "rd_error.h"
 #include "rd_display.h"
+#include<math.h>
 
 #include <string>
 using std::string;
@@ -10,11 +11,11 @@ using std::string;
 // global variable to store frame_no
 int frame_number;
 // store value of current color in global value
-float DrawColor[3] = {0.0, 0.0, 0.0};
+ float DrawColor[] = {1.0, 1.0, 1.0};
 //const float color_black[3] = {100,0,0};
 //const int X_resolution;
 //const int Y_resolution;
-float BackgroundColor[3] = {1.0 ,  1.0 , 1.0};
+ float BackgroundColor[] = {0.0 ,  0.0 , 0.0};
 
 
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
@@ -27,7 +28,8 @@ int REDirect::rd_format(int xresolution, int yresolution)
 {
 
     // store values of resolution in global variables. This is required in pnm
-     std::cout<<xresolution<<yresolution;
+    // but we already have display_xSize and display_ySize
+   //  std::cout<<xresolution<<yresolution;
     return RD_OK;
 }
 
@@ -37,6 +39,8 @@ int REDirect::rd_frame_begin(int frame_no)
     // Store the frame value in a global variable
    // rd_disp_init_frame(frame_number);
     frame_number = frame_no;
+   // DrawColor[3] = {0.0, 0.0, 0.0};
+   // BackgroundColor[3] = {1.0 ,  1.0 , 1.0};
     //Calling world begin or init frame will give error
     return RD_OK;
 }
@@ -99,96 +103,115 @@ int REDirect::rd_color(const float color[])
 
  int REDirect::rd_point(const float p[3]){
     // ONly have to write the pixel at the given co-ordinates
-    return(rd_write_pixel(p[0],p[1], &DrawColor[0]));
+    return(rd_write_pixel(p[0],p[1], DrawColor));
 }
 
  int REDirect::rd_background(const float color[]) {
     BackgroundColor[0] = color[0];
-     BackgroundColor[0] = color[1];
-     BackgroundColor[0] = color[2];
-    return (rd_set_background(&BackgroundColor[0]));
+     BackgroundColor[1] = color[1];
+     BackgroundColor[2] = color[2];
+    return (rd_set_background(BackgroundColor));
 }
 
-     //  rd_clear();
-     // std::cout<<color;
-
-//    typedef int(*)(int, int, const float*)
-
-     //    std::cout<<color;
-     //  rd_clear();
-     // const float* backgroundColor = (const float*)color_black;
-     //  const float drawing_colors[3] = {0.2,1.0,0.2};
-     //       int a;
-     //   a =rd_write_pixel(10,10, &drawing_colors[0]);
-//     a =rd_write_pixel(0,2, &drawing_colors[0]);
-//
-//     a =rd_write_pixel(0,3, &drawing_colors[0]);
-//
-//     a =rd_write_pixel(0,4, &drawing_colors[0]);
-//
-//     a =rd_write_pixel(0,5, &drawing_colors[0]);
-//
-     //   rd_point(color_black);
-//     rd_set_background(&color_black[0]);
-     // rd_clear();
-//     a = rd_write_pixel(0,6, &drawing_colors[0]);
-     //   std::cout<<a;
-     //const float points[3] = {1,2,3};
-     //rd_clear();
-     //std::cout<<REDirect::rd_point(points);
-
-     // rd_clear();
-//    return(RD_OK);
-//backgroundfunc()
-
-
+void REDirect::swap_points(float &p1, float &p2){
+    float temp = p1;
+    p1 = p2;
+    p2 = temp;
+}
 
 
 int REDirect::rd_line(const float start[3], const float end[3]){
+
+ //   std::cout<<"x "<<start[0]<<"y "<<start[1]<<"z "<<start[2];
     float xs = start[0];
     float ys = start[1];
 
     float xe = end[0];
     float ye = end[1];
 
+    float dx = xe - xs;
+
+    // if dx is negative, swap end points
+    if(dx<0){
+        swap_points(xs, xe);
+        swap_points(ys, ye);
+    }
+    
     float x = xs;
     float y = ys;
 
-    float dx = xe - xs;
+    dx = xe - xs;
     float dy = ye - ys;
 
     float po = 2*dx - 2*dy;
     float p;
+    p = po;
 
-    while(x<xe){
+     char lineType;
+
+    if(dy<0){
+        lineType = 'U';
+    }
+    else{
+        lineType = 'D';
+    }
+
+    while(x<=xe){
         rd_write_pixel(int(x), int(y), DrawColor);
-        x++;
-        p = po;
+
         if(p<0){
             //y = y;
             p = p + 2*dy;
-        } else if (p>0){
-            y = y + 1;
+        } else if (p>=0){
             p = p + (2*dy - 2*dx);
 
+            switch (lineType) {
+                case 'U':
+                    y++;
+                    break;
+                case 'D':
+                    y--;
+                    break;
+            }
+           // y = y + 1;
         }
-        else{
-            std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;
-        }
+        x++;
+
+        //
+//        else{
+//            std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;
+//        }
     }
     return(RD_OK);
 }
 
+
 int REDirect::rd_circle(const float center[3], float radius)
 {
     float po = 1 - radius;
-    float x = center[0];
-    float y = center[1];
-
+    int x = 0;
+    int y = radius;
+    int xp = int(center[0]);
+    int yp = int(center[1]);
+    //std::cout<<"x "<<x<<"y "<<y;
     float p = po;
 
-    while(x<y){
-        rd_write_pixel(int(x),int(y),DrawColor);
+    //float combinations[8][2] = {{x,y}, {y,x}, {-x,-y}, {-y,-x}, {-x, y}, {y,-x}};
+    //plot each of the combinations (8)
+//    for(int i = 0; i<8; i++) {
+//        int x_plot = combinations[i][0];
+//        int y_plot = combinations[i][1];
+//
+//        if (x_plot < y_plot) {
+//            circle_plot_function(x_plot, y_plot, x_plot, y_plot, p);
+//        }
+//        else{
+//            circle_plot_function(x_plot, y_plot, x_plot, y_plot, p);
+//        }
+//    }
+
+    while(y>=x){
+        circle_plot_points(x,y,xp,yp);
         x++;
         if(p<0){
             p = p + 2*x +1;
@@ -204,33 +227,97 @@ int REDirect::rd_circle(const float center[3], float radius)
     return RD_OK;
 }
 
- int REDirect::rd_fill(const float seed_point[3]){
-
-    float x = seed_point[0];
-    float y = seed_point[1];
-
-     const float* fill_color = DrawColor;
-     const float* seed_color = DrawColor;
-             //rd_read_pixel(x, y, fill_color);
-
-     if(seed_color == fill_color) {
-
-         rd_write_pixel(x, y, fill_color);
-        // implement boundary checking later when this command works
-        // Following the name convention of WASD as arrow indications for the four point fill algorithm
-        const float D[3] = {x+1,y,0};
-         const float A[3] = {x-1,y,0};
-         const float W[3] = {x,y+1,0};
-         const float S[3] = {x,y-1,0};
-         rd_fill(D);
-         rd_fill(A);
-         rd_fill(W);
-         rd_fill(S);
-     }
-    return(RD_OK);
+void REDirect::circle_plot_points(int x, int y, int xp, int yp){
+    rd_write_pixel(xp+x, yp+y, DrawColor);
+    rd_write_pixel(xp-x, yp+y, DrawColor);
+    rd_write_pixel(xp+x, yp-y, DrawColor);
+    rd_write_pixel(xp-x, yp-y, DrawColor);
+    rd_write_pixel(xp+y, yp+x, DrawColor);
+    rd_write_pixel(xp-y, yp+x, DrawColor);
+    rd_write_pixel(xp+y, yp-x, DrawColor);
+    rd_write_pixel(xp-y, yp-x, DrawColor);
 }
 
+double round_up_ceil(double value, int decimal_points = 1) {
+    const double multiplier = std::pow(10.0, decimal_points);
+    return(std::ceil(value * multiplier) / multiplier);
+}
 
+ int REDirect::rd_fill(const float seed_point[3]){
+
+fill_helper(int(seed_point[0]), int(seed_point[1]));
+
+return(RD_OK);
+}
+
+void REDirect::fill_helper(int x, int y){
+    float seed_color[3];
+    //pass seed color as a reference and get seed color
+    rd_read_pixel(x,y,&seed_color[0]);
+
+    // Remembering graphics is sometimes a hack,
+    // The color read is not exact and has a lot of decimals
+    // ceiling the values
+    seed_color[0] = round_up_ceil(seed_color[0]);
+    seed_color[1] = round_up_ceil(seed_color[1]);
+    seed_color[2] = round_up_ceil(seed_color[2]);
+
+   // std::cout<<"Seed colors : "<<seed_color[0]<<" "<<seed_color[1]<<" "<<seed_color[2]<<std::endl;
+
+//     std::cout<<"Seed colors : "<<seed_color[0]<<" "<<seed_color[1]<<" "<<
+
+    //int x = int(seed_point[0]);
+    //int y = int(seed_point[1]);
+   // std::cout<<"seed points"<<x<<"  "<<y<<" "<<seed_point[2]<<std::endl;
+
+    if(boundary_check(x,y)){
+        return;
+    }
+
+    else if( ( (seed_color[0]!=BackgroundColor[0]) && (seed_color[1]!=BackgroundColor[1]) && (seed_color[2]!=BackgroundColor[2]) ) ) {
+        return;
+    }
+
+    //std::cout<<"Seed colors : "<<seed_color[0]<<" "<<seed_color[1]<<" "<<seed_color[2]<<std::endl;
+    //std::cout<<"Background colors : "<<BackgroundColor[0]<<" "<<BackgroundColor[1]<<" "<<BackgroundColor[2]<<std::endl;
+
+ //   std::cout<<"x "<<x<<" y "<<y<<std::endl;
+    rd_write_pixel(x, y, DrawColor);
+
+    //     std::cout<<"display sizes"<<display_xSize<<"  "<<display_ySize<<std::endl;
+
+//     std::cout<<"D vals"<<D[0]<<"  "<<D[1]<<"  "<<D[2]<<std::endl;
+
+    // implement boundary checking later when this command works
+    // Following the name convention of WASD as arrow indications for the four point fill algorithm
+   //  float D[] = {float(x+1),float(y),0.0};
+
+    int D[2] = {x+1, y};
+    int A[2] = {x-1, y};
+    int W[2] = {x, y+1};
+    int S[2] = {x, y-1};
+
+//    if(check_fill_condition(D[0], D[1])&&check_fill_condition(A[0], A[1])&&check_fill_condition(W[0], W[1])&&check_fill_condition(S[0], S[1])){
+//        return(false);
+//    }
+
+
+    fill_helper(D[0], D[1]);
+    fill_helper(A[0], A[1]);
+    fill_helper(W[0], W[1]);
+    fill_helper(S[0], S[1]);
+
+}
+
+bool REDirect::boundary_check(int x, int y){
+    if((x<4)||(x>(display_xSize-4))||(y<4)||(y>(display_ySize-4)))
+    {
+        return(true);
+    }
+    else{
+        return(false);
+    }
+}
 
 
 ///**********Camera*************************/
@@ -254,7 +341,7 @@ int REDirect::rd_circle(const float center[3], float radius)
 //{
 //    return RD_OK;
 //}
-
+//
 ////
 /////**********************   Transformations **********************************/
 //
@@ -326,10 +413,10 @@ int REDirect::rd_circle(const float center[3], float radius)
 //}
 //
 //
-
 //
 //
-
+//
+//
 //
 //
 //int REDirect::rd_lineset(const string & vertex_type,
@@ -448,10 +535,7 @@ int REDirect::rd_circle(const float center[3], float radius)
 //    return RD_OK;
 //}
 //
-//int REDirect::rd_fill(const float seed_point[3])
-//{
-//    return RD_OK;
-//}
+//
 //
 //int REDirect::rd_surface(const string & shader_type)
 //{

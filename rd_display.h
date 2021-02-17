@@ -9,7 +9,6 @@ using std::string;
 extern int display_xSize, display_ySize;
 //extern int total_colors = 3;
 extern const char * display_name;
-const float* backgroundColors;
 /************************************************************************/
 /* Generic rendering functions.  When rd_set_display() is called, these
    functions will be connected with the appropriate drivers. */

@@ -39,12 +39,16 @@ int rd_frame_end(void);
  int rd_background(const float color[]);
 
  int rd_line(const float start[3], const float end[3]);
+     int rd_circle(const float center[3], float radius);
 
- int rd_circle(const float center[3], float radius);
+ void circle_plot_points(int x, int y, int xp, int yp);
+     int rd_fill(const float seed_point[3]);
 
- int rd_fill(const float seed_point[3]);
+ void fill_helper(int x, int y);
+bool boundary_check(int x, int y);
+    void swap_points(float &p1, float &p2);
 
-
+ //
 //
 //    /**********************   Camera  ******************************************/
 ////
@@ -80,7 +84,6 @@ int rd_frame_end(void);
 //                                     int * crease_list, int ncrease,
 //                                     float *sharpness);
 //
-//     int rd_circle(const float center[3], float radius);
 //
 //
 //     int rd_lineset(const string & vertex_type,
@@ -129,7 +132,6 @@ int rd_frame_end(void);
 //
 //     int rd_emission(const float color[], float intensity);
 //
-//     int rd_fill(const float seed_point[3]);
 //
 //     int rd_surface(const string & shader_type);
 //

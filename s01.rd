@@ -14,13 +14,17 @@ WorldBegin
 
 Color 1 0 0
 
-Point 250 250 0
+# Point 250 250 0
 
-Line 44 30 0 54 30 0
+# Horizontal line left to right
+# Line 50 50 0 250 250 0
 
-Circle 125 125 0 40
+# Horizontal line right to left
+Line 250 250 0 50 50 0
 
-Fill 100 100 0
+# Circle 125 125 0 40
+
+# Fill 100 100 0
 
 WorldEnd
 

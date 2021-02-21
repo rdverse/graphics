@@ -1,6 +1,6 @@
 # This is a test/example rd file
 
-Display "Concentric Circles"  "PNM" "rgb"
+Display "Concentric Circles"  "Screen" "rgbsingle"
 Format 1000 900
 
 

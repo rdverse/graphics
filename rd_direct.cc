@@ -122,16 +122,18 @@ void REDirect::swap_points(float &p1, float &p2){
 
 int REDirect::rd_line(const float start[3], const float end[3]){
 
- //   std::cout<<"x "<<start[0]<<"y "<<start[1]<<"z "<<start[2];
+    // Read the coordinates of line start point
     float xs = start[0];
     float ys = start[1];
 
+    // Read coordinates of line end point
     float xe = end[0];
     float ye = end[1];
 
+    // Calculate dx (start-end)x
     float dx = xe - xs;
 
-    // if dx is negative, swap end points
+    // if dx<0, swap end points (by reference)
     if(dx<0){
         swap_points(xs, xe);
         swap_points(ys, ye);
@@ -139,16 +141,17 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     
     float x = xs;
     float y = ys;
-
+    // calculate new dx
     dx = xe - xs;
+    // Calculate dy
     float dy = ye - ys;
 
-    float po = 2*dx - 2*dy;
+    //Initial P
     float p;
-    p = po;
+    p =  2*dx - 2*dy;
 
-     char lineType;
-
+    // Is the line going upwards or downwards?
+    char lineType;
     if(dy<0){
         lineType = 'U';
     }
@@ -157,33 +160,48 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     }
 
     while(x<=xe){
+        // Draw the first point
         rd_write_pixel(int(x), int(y), DrawColor);
 
         if(p<0){
-            //y = y;
+            //No change in y;
+            // Only p changes
             p = p + 2*dy;
+        //    y--;
+
         } else if (p>=0){
+            // update p
             p = p + (2*dy - 2*dx);
-
-            switch (lineType) {
-                case 'U':
-                    y++;
-                    break;
-                case 'D':
-                    y--;
-                    break;
-            }
-           // y = y + 1;
+            y++;
+            // y increases if line goes up or conditionally decrement
+//            std::cout<<lineType;
+//            y++;
+//            switch (lineType) {
+//                case 'U':
+//                    y++;
+//                    std::cout<<"y incremented";
+//                    break;
+//                case 'D':
+//                    y--;
+//                    std::cout<<"y decremented";
+//                    break;
+//            }
         }
+        //In any case increment x (also conditional i guess)
         x++;
-
-        //
-//        else{
-//            std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;
-//        }
     }
     return(RD_OK);
 }
+
+void REDirect::line_more_horizontal()
+{
+
+
+
+}
+
+
+
 
 
 int REDirect::rd_circle(const float center[3], float radius)

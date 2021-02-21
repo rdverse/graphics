@@ -48,7 +48,10 @@ int rd_frame_end(void);
 bool boundary_check(int x, int y);
     void swap_points(float &p1, float &p2);
 
- //
+void line_more_horizontal(float xs, float ys, float xe, float ye);
+    void line_more_vertical(float xs, float ys, float xe, float ye);
+
+    //
 //
 //    /**********************   Camera  ******************************************/
 ////

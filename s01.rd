@@ -16,11 +16,14 @@ Color 1 0 0
 
 # Point 250 250 0
 
+# Line more horizontal, up
+Line 50 175 0 250 25 0
+
 # Horizontal line left to right
 # Line 50 50 0 250 250 0
 
 # Horizontal line right to left
-Line 250 250 0 50 50 0
+# Line 250 250 0 50 50 0
 
 # Circle 125 125 0 40
 

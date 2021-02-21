@@ -4,10 +4,10 @@
 #include "rd_error.h"
 #include "rd_display.h"
 #include<math.h>
-
+#include<cmath>
 #include <string>
 using std::string;
-
+using std::swap;
 // global variable to store frame_no
 int frame_number;
 // store value of current color in global value
@@ -123,83 +123,121 @@ void REDirect::swap_points(float &p1, float &p2){
 int REDirect::rd_line(const float start[3], const float end[3]){
 
     // Read the coordinates of line start point
-    float xs = start[0];
-    float ys = start[1];
+    float x0 = start[0];
+    float y0 = start[1];
 
     // Read coordinates of line end point
-    float xe = end[0];
-    float ye = end[1];
+    float x1 = end[0];
+    float y1 = end[1];
 
     // Calculate dx (start-end)x
-    float dx = xe - xs;
+    float dx = x1 - x0;
+    float dy = y1 - y0;
 
-    // if dx<0, swap end points (by reference)
-    if(dx<0){
-        swap_points(xs, xe);
-        swap_points(ys, ye);
+    std::cout<<"dy :"<<dy<<" dx: "<<dx;
+
+    // More horizontal
+    if(abs(dy)<abs(dx)){
+        std::cout<<"dy<dx";
+        if(dx<0){
+            swap(x0, x1);
+            swap(y0, y1);
+        }
+        line_more_horizontal(x0,y0,x1,y1);
     }
-    
+    //more vertical (dy>dx)
+    else{
+        // if dy<0, swap end points (by reference)
+        if(dy<0){
+            std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+            swap(x0, x1);
+            swap(y0, y1);
+        }
+//        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+        line_more_vertical(x0,y0,x1,y1);
+    }
+
+//    // Is the line going upwards or downwards?
+//    char lineType;
+//    if(dy<0){
+//        lineType = 'U';
+//    }
+//    else{
+//        lineType = 'D';
+//    }
+    return(RD_OK);
+}
+
+void REDirect::line_more_horizontal(float xs, float ys, float xe, float ye)
+{
+    // Swapping is done in main line function , dont worry about it
     float x = xs;
     float y = ys;
-    // calculate new dx
-    dx = xe - xs;
-    // Calculate dy
+
     float dy = ye - ys;
+    float dx = xe - xs;
+    float p = 2*dy - dx;
 
-    //Initial P
-    float p;
-    p =  2*dx - 2*dy;
+    float yi = 1;
 
-    // Is the line going upwards or downwards?
-    char lineType;
     if(dy<0){
-        lineType = 'U';
+        yi = -1;
+        dy = -dy;
     }
-    else{
-        lineType = 'D';
-    }
+    std::cout<<"y :"<<y<<" ye: "<<ye;
 
     while(x<=xe){
         // Draw the first point
         rd_write_pixel(int(x), int(y), DrawColor);
-
         if(p<0){
             //No change in y;
             // Only p changes
             p = p + 2*dy;
-        //    y--;
-
         } else if (p>=0){
             // update p
+            y = y + yi;
             p = p + (2*dy - 2*dx);
-            y++;
-            // y increases if line goes up or conditionally decrement
-//            std::cout<<lineType;
-//            y++;
-//            switch (lineType) {
-//                case 'U':
-//                    y++;
-//                    std::cout<<"y incremented";
-//                    break;
-//                case 'D':
-//                    y--;
-//                    std::cout<<"y decremented";
-//                    break;
-//            }
+
         }
         //In any case increment x (also conditional i guess)
         x++;
     }
-    return(RD_OK);
 }
 
-void REDirect::line_more_horizontal()
+
+void REDirect::line_more_vertical(float xs, float ys, float xe, float ye)
 {
+    // Swapping is done in main line function , dont worry about it
+    float x = xs;
+    float y = ys;
 
+    float dy = ye - ys;
+    float dx = xe - xs;
+    float p = 2*dx - dy;
 
+    float xi = 1;
 
+    if(dx<0){
+        xi = -1;
+        dx = -dx;
+    }
+
+    while(y<=ye){
+        // Draw the first point
+        rd_write_pixel(int(x), int(y), DrawColor);
+        if(p<0){
+            //No change in y;
+            // Only p changes
+            p = p + 2*dx;
+        } else if (p>=0){
+            // update p
+            p = p + (2*dx - 2*dy);
+            x = x + xi;
+        }
+        //In any case increment x (also conditional i guess)
+        y++;
+    }
 }
-
 
 
 

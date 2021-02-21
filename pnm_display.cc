@@ -32,6 +32,7 @@ int pnm_init_display(void){
     //allocate memmory for an image
     Image = new float[const_display_ySize*const_display_xSize*totalColors];
 
+    std::cout<<std::endl<<"PNM image size: "<<const_display_ySize*const_display_xSize*totalColors;
 //    try {
 //        for (int y = 0; y < const_display_ySize; y++)
 //            for (int x = 0; x < const_display_xSize; x++)
@@ -150,14 +151,14 @@ int pnm_end_frame(void){
     //                    *(Image +
 //                    y*const_display_xSize*totalColors +
 //                    x*totalColors + totalColors) = 1.0;
-
+std::cout<<"Beginning to write";
     for (int y = 0; y < display_ySize; y++)
     {
         for(int x = 0; x < display_xSize; x++)
         {
             //pnm_write_pixel(x,y,)
             //std::cout<<float(*(Image+y*display_xSize*totalColors + x*totalColors))*255.0<<" ";
-            std::cout<<int(*(Image+y*display_xSize*totalColors + x*totalColors +1)*255)<<" ";
+          //  std::cout<<int(*(Image+y*display_xSize*totalColors + x*totalColors +1)*255)<<" ";
             outStream.put(int(*(Image+y*display_xSize*totalColors + x*totalColors)*255)); // Red
             outStream.put(int(*(Image+ y*display_xSize*totalColors + x*totalColors + 1)*255)); // Green
             outStream.put(int(*(Image+ y*display_xSize*totalColors + x*totalColors + 2)*255)); // Blue
@@ -168,29 +169,29 @@ int pnm_end_frame(void){
 
     outStream.close();
 
-    const int XSIZE = 400;
-    const int YSIZE = 400;
-
-    ofstream out;
-
-    out.open("tests.ppm", ios::binary);
-
-    // Print header
-
-   // out << "P6\n" << XSIZE << " " << YSIZE << "\n255\n";
-
-    for (int y = 0; y < YSIZE; y++)
-    {
-        for(int x = 0; x < XSIZE; x++)
-        {
-            std::cout<<int(((float)x/XSIZE)*255)<<" ";
-            out.put(int(((float)x/XSIZE)*255)); // Red
-            out.put(int(((float)y/YSIZE)*255)); // Green
-            out.put(0.4); // Blue
-        }
-    }
-
-    out.close();
+//    const int XSIZE = 400;
+//    const int YSIZE = 400;
+//
+//    ofstream out;
+//
+//    out.open("tests.ppm", ios::binary);
+//
+//    // Print header
+//
+//   // out << "P6\n" << XSIZE << " " << YSIZE << "\n255\n";
+//
+//    for (int y = 0; y < YSIZE; y++)
+//    {
+//        for(int x = 0; x < XSIZE; x++)
+//        {
+//            std::cout<<int(((float)x/XSIZE)*255)<<" ";
+//            out.put(int(((float)x/XSIZE)*255)); // Red
+//            out.put(int(((float)y/YSIZE)*255)); // Green
+//            out.put(0.4); // Blue
+//        }
+//    }
+//
+//    out.close();
     return(RD_OK);
 }
 

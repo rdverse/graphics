@@ -152,6 +152,7 @@ int REDirect::rd_line(const float start[3], const float end[3]){
             std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
             swap(x0, x1);
             swap(y0, y1);
+            std::cout<<"swap complete";
         }
 //        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
         line_more_vertical(x0,y0,x1,y1);

@@ -29,7 +29,7 @@ Fill 250 250 0
 
 Color 0.0 0.0 1.0
 
-Circle 170 190 0 30
+Circle 170 190 0 37
 
 Fill 170 190 0
 

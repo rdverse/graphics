@@ -28,13 +28,16 @@ int rd_frame_begin(int frame_no);
 
 int rd_frame_end(void);
 
- int rd_render_init(void);  /* Initialize renderer */
-
- int rd_render_cleanup(void);
+// int rd_render_init(void);  /* Initialize renderer */
+//
+// int rd_render_cleanup(void);
 
  int rd_color(const float color[]);
 
- int rd_point(const float p[3]);
+void check_write_pixel(int x, int y);
+
+
+    int rd_point(const float p[3]);
 
  int rd_background(const float color[]);
 

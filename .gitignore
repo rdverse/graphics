@@ -1,0 +1,17 @@
+*.zip
+
+*~
+
+try*
+
+core*
+
+test*
+
+*.o
+
+.gradle
+
+.idea
+
+.emacs.d

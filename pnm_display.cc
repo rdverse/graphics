@@ -33,22 +33,6 @@ int pnm_init_display(void){
     Image = new float[const_display_ySize*const_display_xSize*totalColors];
 
     std::cout<<std::endl<<"PNM image size: "<<const_display_ySize*const_display_xSize*totalColors;
-//    try {
-//        for (int y = 0; y < const_display_ySize; y++)
-//            for (int x = 0; x < const_display_xSize; x++)
-//                for (int c = 0; c < totalColors; c++)
-//                    *(Image +
-//                    y*const_display_xSize*totalColors +
-//                    x*totalColors + c) = 1.0;
-//        for (int i = 0; i < const_display_ySize*const_display_xSize*totalColors; i++)
-//            *(Image + i) = 1.0;
-//    std::fill_n(&Image[0][0][0], display_ySize*display_xSize*3,0);
-//
-//std::cout<<"pnm display";
-//}
-//catch(std::exception &e){
-//    std::cerr<<"Image could not be initialized"<<e.what();
-//}
 
 return(RD_OK);
 }
@@ -58,78 +42,27 @@ int pnm_end_display(void){
 
     delete[] Image;
 
-//    catch(std::exception &e){
-//        std::cerr<<"could not delete image array"<<e.what();
-//    }
     return(RD_OK);
 }
 
 int pnm_init_frame(int frame_no) {
     frameNumber = frame_no;
 
-//      std::fill_n(&Image[0][0][0], display_ySize*display_xSize*3,0);
-//    for (int i = 0; i < display_ySize * display_xSize * 3; i++) {
-//    *(Image + i) = 0.5;
-//}
 
-    for (int y = 0; y < display_ySize; y++)
-    {
-        for(int x = 0; x < display_xSize; x++)
-        {
+    for (int y = 0; y < display_ySize; y++) {
+        for (int x = 0; x < display_xSize; x++) {
             //pnm_write_pixel(x,y,)
             //*(Image+y*display_xSize*totalColors + x*totalColors))*255.0<<" ";
-            *(Image+y*display_xSize*totalColors + x*totalColors) = backgroundColor[0]; // Red
-            *(Image+ y*display_xSize*totalColors + x*totalColors + 1) = backgroundColor[1]; // Green
-            *(Image+ y*display_xSize*totalColors + x*totalColors + 2) = backgroundColor[2]; // Blue
+            *(Image + y * display_xSize * totalColors + x * totalColors) = backgroundColor[0]; // Red
+            *(Image + y * display_xSize * totalColors + x * totalColors + 1) = backgroundColor[1]; // Green
+            *(Image + y * display_xSize * totalColors + x * totalColors + 2) = backgroundColor[2]; // Blue
         }
     }
-
-    //catch(std::exception &e){
-    //    std::cerr<<"Image could not be re-initialized"<<e.what();
-   // }
-
-    return(RD_OK);}
-
-//int pnm_end_frame(void){
-//    // Most involved routine copy contents to a file
-//
-//
-//    int totalColors =3;
-//    char fileName[30] = "1.ppm";
-//
-//    //fileName = "1.ppm";
-//
-//    ofstream outStream;
-//
-//    outStream.open(fileName, ios::binary);
-//
-//    // Print header
-//    outStream<<display_name<<"\n"<< display_xSize<<"X"<< display_ySize;
-////                    *(Image +
-////                    y*const_display_xSize*totalColors +
-////                    x*totalColors + totalColors) = 1.0;
-//
-//    for (int y = 0; y < display_ySize-2; y++)
-//    {
-//        for(int x = 0; x < display_xSize-2; x++)
-//        {
-//            std::cout<<*(Image+y*display_xSize*totalColors + x*totalColors)<<" ";
-//            outStream.put(int(*(Image+y*display_xSize*totalColors + x*totalColors)*255)); // Red
-//            outStream.put(int(*(Image+ y*display_xSize*totalColors + x*totalColors + 1)*255)); // Green
-//            outStream.put(int(*(Image+ y*display_xSize*totalColors + x*totalColors + 2)*255)); // Blue
-//        }
-//    }
-//
-//    outStream.close();
-//
-//    return(RD_OK);
-//}
-
+    return RD_OK;
+}
 
 int pnm_end_frame(void){
     // Most involved routine copy contents to a file
-
-
     int totalColors =3;
     // FileName is inititalized here, following the convention
    // char fileName[30] = "testing.ppm";
@@ -145,12 +78,8 @@ int pnm_end_frame(void){
     outStream.open("testing.ppm", ios::binary);
 
     // Print header of file
-    //outStream<<display_name<<"\n"<< display_xSize<<"X"<< display_ySize;
      outStream << "P6\n" << display_xSize << " " << display_ySize << "\n255\n";
 
-    //                    *(Image +
-//                    y*const_display_xSize*totalColors +
-//                    x*totalColors + totalColors) = 1.0;
 std::cout<<"Beginning to write";
     for (int y = 0; y < display_ySize; y++)
     {
@@ -169,35 +98,8 @@ std::cout<<"Beginning to write";
 
     outStream.close();
 
-//    const int XSIZE = 400;
-//    const int YSIZE = 400;
-//
-//    ofstream out;
-//
-//    out.open("tests.ppm", ios::binary);
-//
-//    // Print header
-//
-//   // out << "P6\n" << XSIZE << " " << YSIZE << "\n255\n";
-//
-//    for (int y = 0; y < YSIZE; y++)
-//    {
-//        for(int x = 0; x < XSIZE; x++)
-//        {
-//            std::cout<<int(((float)x/XSIZE)*255)<<" ";
-//            out.put(int(((float)x/XSIZE)*255)); // Red
-//            out.put(int(((float)y/YSIZE)*255)); // Green
-//            out.put(0.4); // Blue
-//        }
-//    }
-//
-//    out.close();
     return(RD_OK);
 }
-
-
-
-
 
 
 int pnm_write_pixel(int x, int y, const float rgb []){
@@ -206,16 +108,7 @@ int pnm_write_pixel(int x, int y, const float rgb []){
     *(Image + y * display_xSize * totalColors + x * totalColors + 1) = rgb[1];
     *(Image + y * display_xSize * totalColors + x * totalColors + 2) = rgb[2];
 
-//    for(int y=0; y<display_ySize; y++) {
-//        for (int x = 0; x < display_xSize; x++) {
-//            *(Image + y * display_xSize * totalColors + x * totalColors + 0) = rgb[0];
-//            *(Image + y * display_xSize * totalColors + x * totalColors + 1) = rgb[1];
-//            *(Image + y * display_xSize * totalColors + x * totalColors + 2) = rgb[2];
-//        }
-//    }
-//    Image[y][x][0] = rgb[0];
-//    Image[y][x][1] = rgb[1];
-//    Image[y][x][2] = rgb[2];
+
     return(RD_OK);
 }
 
@@ -224,12 +117,6 @@ int pnm_read_pixel(int x, int y, float rgb []){
     rgb[0] = *(Image+ y*display_xSize*totalColors + x*totalColors + 0);
     rgb[1] = *(Image+ y*display_xSize*totalColors + x*totalColors + 1);
     rgb[2] = *(Image+ y*display_xSize*totalColors + x*totalColors + 2);
-
-//    rgb[0] = Image[y][x][0];
-//    rgb[1] = Image[y][x][1] ;
-//    rgb[2] = Image[y][x][2];
-
-
     return(RD_OK);
 }
 
@@ -242,17 +129,7 @@ int pnm_set_background(const float rgb []){
 }
 
 int pnm_clear(void){
-//     for(int y=0; y< display_ySize; y++){
-//     for(int x=0; y< display_xSize; x++){
-//         Image[y][x][0] = backgroundColor[0];
-//         Image[y][x][1] = backgroundColor[1];
-//         Image[y][x][2] = backgroundColor[2];
-//     }
-// }
-        //set background color to pnm
-//        for (int i = 0; i < display_ySize*display_xSize*3; i++) {
-//            *(Image + i) = 0.0;
-//        }
+
     for (int y = 0; y < display_ySize; y++)
     {
         for(int x = 0; x < display_xSize; x++)
@@ -267,26 +144,3 @@ int pnm_clear(void){
 
     return(RD_OK);
 }
-
-
-//#include "pnm_display.h"
-//int pnm_init_display(void){
-//    return(1);}
-//
-//int pnm_end_display(void){
-//    return(1);}
-//
-//int pnm_init_frame(int){
-//    return(1);}
-//
-//int pnm_end_frame(void){
-//    return(1);}
-//
-//int pnm_write_pixel(int x, int y, const float rgb []){return(1);}
-//
-//int pnm_read_pixel(int x, int y, float rgb []){return(1);}
-//
-//
-//int pnm_set_background(const float rgb []){return(1);}
-//
-//int pnm_clear(void){return(1);}

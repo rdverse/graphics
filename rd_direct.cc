@@ -48,7 +48,7 @@ int REDirect::rd_frame_begin(int frame_no)
 int REDirect::rd_world_begin(void) {
     //initialize display for new image, use below function
     // float testreturn[3] = {0,0,0};
-    // rd_write_pixel(10,10, testreturn);
+    // check_write_pixel(10,10, testreturn);
     //rd_print_error(RD_OK, "s01.rd");
     try {
 //        rd_disp_init_frame(frame_number);
@@ -82,15 +82,26 @@ int REDirect::rd_frame_end(void)
 }
 
 
-int REDirect::rd_render_init(void)
-{
-    return RD_OK;
+//int REDirect::rd_render_init(void)
+//{
+//    return RD_OK;
+//}
+//
+//int REDirect::rd_render_cleanup(void)
+//{
+//    return RD_OK;
+//}
+
+void REDirect::check_write_pixel(int x, int y) {
+    if((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize))
+    {
+        std::cout<<"Cannot write the pixel"<<" x: "<<x<<", y: "<<y<<std::endl;
+    }
+    else{
+        rd_write_pixel(int(x), int(y), DrawColor);
+    }
 }
 
-int REDirect::rd_render_cleanup(void)
-{
-    return RD_OK;
-}
 
 int REDirect::rd_color(const float color[])
 {
@@ -103,7 +114,8 @@ int REDirect::rd_color(const float color[])
 
  int REDirect::rd_point(const float p[3]){
     // ONly have to write the pixel at the given co-ordinates
-    return(rd_write_pixel(p[0],p[1], DrawColor));
+     check_write_pixel(int(p[0]),int(p[1]));
+    return(RD_OK);
 }
 
  int REDirect::rd_background(const float color[]) {
@@ -137,9 +149,9 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     std::cout<<"dy :"<<dy<<" dx: "<<dx;
 
     // More horizontal
-    if(abs(dy)<abs(dx)){
+    if(abs(dy)<=abs(dx)){
         std::cout<<"dy<dx";
-        if(dx<0){
+        if(dx<=0){
             swap(x0, x1);
             swap(y0, y1);
         }
@@ -158,14 +170,6 @@ int REDirect::rd_line(const float start[3], const float end[3]){
         line_more_vertical(x0,y0,x1,y1);
     }
 
-//    // Is the line going upwards or downwards?
-//    char lineType;
-//    if(dy<0){
-//        lineType = 'U';
-//    }
-//    else{
-//        lineType = 'D';
-//    }
     return(RD_OK);
 }
 
@@ -189,7 +193,9 @@ void REDirect::line_more_horizontal(float xs, float ys, float xe, float ye)
 
     while(x<=xe){
         // Draw the first point
-        rd_write_pixel(int(x), int(y), DrawColor);
+        std::cout<<"x :"<<x<<" y: "<<y<<std::endl;
+
+        check_write_pixel(int(x), int(y));
         if(p<0){
             //No change in y;
             // Only p changes
@@ -225,7 +231,7 @@ void REDirect::line_more_vertical(float xs, float ys, float xe, float ye)
 
     while(y<=ye){
         // Draw the first point
-        rd_write_pixel(int(x), int(y), DrawColor);
+        check_write_pixel(int(x), int(y));
         if(p<0){
             //No change in y;
             // Only p changes
@@ -250,49 +256,36 @@ int REDirect::rd_circle(const float center[3], float radius)
     int y = radius;
     int xp = int(center[0]);
     int yp = int(center[1]);
-    //std::cout<<"x "<<x<<"y "<<y;
-    float p = po;
 
-    //float combinations[8][2] = {{x,y}, {y,x}, {-x,-y}, {-y,-x}, {-x, y}, {y,-x}};
-    //plot each of the combinations (8)
-//    for(int i = 0; i<8; i++) {
-//        int x_plot = combinations[i][0];
-//        int y_plot = combinations[i][1];
-//
-//        if (x_plot < y_plot) {
-//            circle_plot_function(x_plot, y_plot, x_plot, y_plot, p);
-//        }
-//        else{
-//            circle_plot_function(x_plot, y_plot, x_plot, y_plot, p);
-//        }
-//    }
+    float p = po;
 
     while(y>=x){
         circle_plot_points(x,y,xp,yp);
-        x++;
+       // x = x+1;
         if(p<0){
-            p = p + 2*x +1;
+            p = p + 2*x +3;
         }
-        else if(p>0){
+        else if(p>=0){
+            y = y-1;
             p = p + (2*x - 2*y + 3);
-            y--;
         }
         else{
             std::cerr<<RD_INPUT_ILLEGAL_FLAG_VALUE;
         }
+        x++;
     }
     return RD_OK;
 }
 
 void REDirect::circle_plot_points(int x, int y, int xp, int yp){
-    rd_write_pixel(xp+x, yp+y, DrawColor);
-    rd_write_pixel(xp-x, yp+y, DrawColor);
-    rd_write_pixel(xp+x, yp-y, DrawColor);
-    rd_write_pixel(xp-x, yp-y, DrawColor);
-    rd_write_pixel(xp+y, yp+x, DrawColor);
-    rd_write_pixel(xp-y, yp+x, DrawColor);
-    rd_write_pixel(xp+y, yp-x, DrawColor);
-    rd_write_pixel(xp-y, yp-x, DrawColor);
+    check_write_pixel(xp+x, yp+y);
+    check_write_pixel(xp-x, yp+y);
+    check_write_pixel(xp+x, yp-y);
+    check_write_pixel(xp-x, yp-y);
+    check_write_pixel(xp+y, yp+x);
+    check_write_pixel(xp-y, yp+x);
+    check_write_pixel(xp+y, yp-x);
+    check_write_pixel(xp-y, yp-x);
 }
 
 double round_up_ceil(double value, int decimal_points = 1) {
@@ -308,6 +301,10 @@ return(RD_OK);
 }
 
 void REDirect::fill_helper(int x, int y){
+    if(boundary_check(x,y)){
+        return;
+    }
+
     float seed_color[3];
     //pass seed color as a reference and get seed color
     rd_read_pixel(x,y,&seed_color[0]);
@@ -327,11 +324,9 @@ void REDirect::fill_helper(int x, int y){
     //int y = int(seed_point[1]);
    // std::cout<<"seed points"<<x<<"  "<<y<<" "<<seed_point[2]<<std::endl;
 
-    if(boundary_check(x,y)){
-        return;
-    }
 
-    else if( ( (seed_color[0]!=BackgroundColor[0]) && (seed_color[1]!=BackgroundColor[1]) && (seed_color[2]!=BackgroundColor[2]) ) ) {
+
+ if( ( (seed_color[0]!=BackgroundColor[0]) && (seed_color[1]!=BackgroundColor[1]) && (seed_color[2]!=BackgroundColor[2]) ) ) {
         return;
     }
 
@@ -339,7 +334,7 @@ void REDirect::fill_helper(int x, int y){
     //std::cout<<"Background colors : "<<BackgroundColor[0]<<" "<<BackgroundColor[1]<<" "<<BackgroundColor[2]<<std::endl;
 
  //   std::cout<<"x "<<x<<" y "<<y<<std::endl;
-    rd_write_pixel(x, y, DrawColor);
+    check_write_pixel(x, y);
 
     //     std::cout<<"display sizes"<<display_xSize<<"  "<<display_ySize<<std::endl;
 
@@ -367,7 +362,7 @@ void REDirect::fill_helper(int x, int y){
 }
 
 bool REDirect::boundary_check(int x, int y){
-    if((x<4)||(x>(display_xSize-4))||(y<4)||(y>(display_ySize-4)))
+    if((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize-1))
     {
         return(true);
     }

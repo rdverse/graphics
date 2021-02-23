@@ -62,7 +62,7 @@ Fill 730 450 0
 
 # Purple
 Color 0.49 0.1 0.49
-Circle 500 450 0 265
+Circle 500 450 0 280
 Fill 760 450 0
 
 WorldEnd

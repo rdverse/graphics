@@ -51,8 +51,6 @@ int REDirect::rd_world_begin(void) {
     // check_write_pixel(10,10, testreturn);
     //rd_print_error(RD_OK, "s01.rd");
     try {
-//        rd_disp_init_frame(frame_number);
-//        rd_clear();
         return (rd_disp_init_frame(frame_number));
     }
     catch (std::exception &e) {
@@ -93,6 +91,7 @@ int REDirect::rd_frame_end(void)
 //}
 
 void REDirect::check_write_pixel(int x, int y) {
+    // Check if pixel is within bounds
     if((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize))
     {
         std::cout<<"Cannot write the pixel"<<" x: "<<x<<", y: "<<y<<std::endl;
@@ -118,12 +117,14 @@ int REDirect::rd_color(const float color[])
     return(RD_OK);
 }
 
+// store background color in global variable
  int REDirect::rd_background(const float color[]) {
     BackgroundColor[0] = color[0];
      BackgroundColor[1] = color[1];
      BackgroundColor[2] = color[2];
     return (rd_set_background(BackgroundColor));
 }
+
 
 void REDirect::swap_points(float &p1, float &p2){
     float temp = p1;
@@ -278,6 +279,7 @@ int REDirect::rd_circle(const float center[3], float radius)
 }
 
 void REDirect::circle_plot_points(int x, int y, int xp, int yp){
+// Plot points on 8 octants
     check_write_pixel(xp+x, yp+y);
     check_write_pixel(xp-x, yp+y);
     check_write_pixel(xp+x, yp-y);
@@ -288,15 +290,15 @@ void REDirect::circle_plot_points(int x, int y, int xp, int yp){
     check_write_pixel(xp-y, yp-x);
 }
 
+// Round the color valuesand ceil in nearest integer
 double round_up_ceil(double value, int decimal_points = 1) {
     const double multiplier = std::pow(10.0, decimal_points);
     return(std::ceil(value * multiplier) / multiplier);
 }
 
+// main fill function
  int REDirect::rd_fill(const float seed_point[3]){
-
 fill_helper(int(seed_point[0]), int(seed_point[1]));
-
 return(RD_OK);
 }
 
@@ -304,63 +306,35 @@ void REDirect::fill_helper(int x, int y){
     if(boundary_check(x,y)){
         return;
     }
-
     float seed_color[3];
     //pass seed color as a reference and get seed color
     rd_read_pixel(x,y,&seed_color[0]);
 
-    // Remembering graphics is sometimes a hack,
     // The color read is not exact and has a lot of decimals
     // ceiling the values
     seed_color[0] = round_up_ceil(seed_color[0]);
     seed_color[1] = round_up_ceil(seed_color[1]);
     seed_color[2] = round_up_ceil(seed_color[2]);
 
-   // std::cout<<"Seed colors : "<<seed_color[0]<<" "<<seed_color[1]<<" "<<seed_color[2]<<std::endl;
-
-//     std::cout<<"Seed colors : "<<seed_color[0]<<" "<<seed_color[1]<<" "<<
-
-    //int x = int(seed_point[0]);
-    //int y = int(seed_point[1]);
-   // std::cout<<"seed points"<<x<<"  "<<y<<" "<<seed_point[2]<<std::endl;
-
-
-
  if( ( (seed_color[0]!=BackgroundColor[0]) && (seed_color[1]!=BackgroundColor[1]) && (seed_color[2]!=BackgroundColor[2]) ) ) {
         return;
     }
-
-    //std::cout<<"Seed colors : "<<seed_color[0]<<" "<<seed_color[1]<<" "<<seed_color[2]<<std::endl;
-    //std::cout<<"Background colors : "<<BackgroundColor[0]<<" "<<BackgroundColor[1]<<" "<<BackgroundColor[2]<<std::endl;
-
- //   std::cout<<"x "<<x<<" y "<<y<<std::endl;
     check_write_pixel(x, y);
-
-    //     std::cout<<"display sizes"<<display_xSize<<"  "<<display_ySize<<std::endl;
-
-//     std::cout<<"D vals"<<D[0]<<"  "<<D[1]<<"  "<<D[2]<<std::endl;
 
     // implement boundary checking later when this command works
     // Following the name convention of WASD as arrow indications for the four point fill algorithm
-   //  float D[] = {float(x+1),float(y),0.0};
-
     int D[2] = {x+1, y};
     int A[2] = {x-1, y};
     int W[2] = {x, y+1};
-    int S[2] = {x, y-1};
-
-//    if(check_fill_condition(D[0], D[1])&&check_fill_condition(A[0], A[1])&&check_fill_condition(W[0], W[1])&&check_fill_condition(S[0], S[1])){
-//        return(false);
-//    }
-
-
+    int S[2] = {x, y-1};yy
+// recursive calls
     fill_helper(D[0], D[1]);
     fill_helper(A[0], A[1]);
     fill_helper(W[0], W[1]);
     fill_helper(S[0], S[1]);
 
 }
-
+// check if point is withing the boundary
 bool REDirect::boundary_check(int x, int y){
     if((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize-1))
     {

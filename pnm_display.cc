@@ -1,10 +1,7 @@
 #include<iostream>
 #include <fstream>
 #include<cstring>
-//#include "rd_direct.h"
 #include "rd_display.h"
-//#include "rd_enginebase.h"
-//#include "rd_direct.h"
 #include "pnm_display.h"
 #include "rd_error.h"
 
@@ -12,11 +9,6 @@
 using std::ofstream;
 using std::ios;
 float* Image;
-
-//int display_xSize = 200;
-//int display_ySize = 200;
-
-//char display_name[30] = "Test";
 
 int frameNumber;
 int totalColors = 3;
@@ -48,11 +40,9 @@ int pnm_end_display(void){
 int pnm_init_frame(int frame_no) {
     frameNumber = frame_no;
 
-
+    // background color is put in the image
     for (int y = 0; y < display_ySize; y++) {
         for (int x = 0; x < display_xSize; x++) {
-            //pnm_write_pixel(x,y,)
-            //*(Image+y*display_xSize*totalColors + x*totalColors))*255.0<<" ";
             *(Image + y * display_xSize * totalColors + x * totalColors) = backgroundColor[0]; // Red
             *(Image + y * display_xSize * totalColors + x * totalColors + 1) = backgroundColor[1]; // Green
             *(Image + y * display_xSize * totalColors + x * totalColors + 2) = backgroundColor[2]; // Blue
@@ -85,42 +75,32 @@ std::cout<<"Beginning to write";
     {
         for(int x = 0; x < display_xSize; x++)
         {
-            //pnm_write_pixel(x,y,)
-            //std::cout<<float(*(Image+y*display_xSize*totalColors + x*totalColors))*255.0<<" ";
-          //  std::cout<<int(*(Image+y*display_xSize*totalColors + x*totalColors +1)*255)<<" ";
             outStream.put(int(*(Image+y*display_xSize*totalColors + x*totalColors)*255)); // Red
             outStream.put(int(*(Image+ y*display_xSize*totalColors + x*totalColors + 1)*255)); // Green
             outStream.put(int(*(Image+ y*display_xSize*totalColors + x*totalColors + 2)*255)); // Blue
-          //  break;
         }
-       // break;
     }
-
     outStream.close();
-
     return(RD_OK);
 }
 
-
+// write a pixel value into image
 int pnm_write_pixel(int x, int y, const float rgb []){
-    //std::cout<<"pnm write"<<" r "<<rgb[0]<<" g  "<<rgb[1]<<" b "<<rgb[2]<<" x "<<x<<" y"<<y<<std::endl;
     *(Image + y * display_xSize * totalColors + x * totalColors + 0) = rgb[0];
     *(Image + y * display_xSize * totalColors + x * totalColors + 1) = rgb[1];
     *(Image + y * display_xSize * totalColors + x * totalColors + 2) = rgb[2];
-
-
     return(RD_OK);
 }
 
+// read the color for a given pixel
 int pnm_read_pixel(int x, int y, float rgb []){
-  //  std::cout<<" read pixel is called";
     rgb[0] = *(Image+ y*display_xSize*totalColors + x*totalColors + 0);
     rgb[1] = *(Image+ y*display_xSize*totalColors + x*totalColors + 1);
     rgb[2] = *(Image+ y*display_xSize*totalColors + x*totalColors + 2);
     return(RD_OK);
 }
 
-
+// set the background color
 int pnm_set_background(const float rgb []){
     backgroundColor[0] = rgb[0];
     backgroundColor[1] = rgb[1];
@@ -128,14 +108,13 @@ int pnm_set_background(const float rgb []){
     return(RD_OK);
 }
 
+// set image back to background
 int pnm_clear(void){
 
     for (int y = 0; y < display_ySize; y++)
     {
         for(int x = 0; x < display_xSize; x++)
         {
-            //pnm_write_pixel(x,y,)
-            //*(Image+y*display_xSize*totalColors + x*totalColors))*255.0<<" ";
             *(Image+y*display_xSize*totalColors + x*totalColors) = backgroundColor[0]; // Red
             *(Image+ y*display_xSize*totalColors + x*totalColors + 1) = backgroundColor[1]; // Green
             *(Image+ y*display_xSize*totalColors + x*totalColors + 2) = backgroundColor[2]; // Blue

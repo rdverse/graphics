@@ -7,7 +7,9 @@ try*
 core*
 
 test*
-
+tests
+tests/
+tests/*
 *.o
 
 .gradle

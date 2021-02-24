@@ -1,6 +1,6 @@
-# This is a test/example rd file
+# Using double buffer to draw lines
 
-Display "EdgeTest"  "Screen" "rgbdouble"
+Display "lines2 double intersect"  "Screen" "rgbdouble"
 Format 400 400 
 
 # Testing filling at edges

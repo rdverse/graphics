@@ -1,6 +1,6 @@
-# This is a test/example rd file
+# Took this example from the course website
 
-Display "EdgeTest"  "PNM" "rgb"
+Display "lines3 intersection"  "PNM" "rgb"
 Format 400 400 
 
 # Testing filling at edges

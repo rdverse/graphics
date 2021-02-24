@@ -8,6 +8,8 @@
 
 using std::ofstream;
 using std::ios;
+using std::to_string;
+
 float* Image;
 
 int frameNumber;
@@ -55,22 +57,25 @@ int pnm_end_frame(void){
     // Most involved routine copy contents to a file
     int totalColors =3;
     // FileName is inititalized here, following the convention
-   // char fileName[30] = "testing.ppm";
+   string fileName = display_name;
+   fileName.append("_");
+   fileName.append(to_string(frameNumber));
+   fileName.append(".ppm");
 
     // declare outstream
     ofstream outStream;
 
     // First copy everything into the image.
-    // pnm_write will read contents from [somewhere]
+    // pnm_write will read contents
     // And copy them into the image
 
     // outstream to file
-    outStream.open("testing.ppm", ios::binary);
+    outStream.open(fileName, ios::binary);
 
     // Print header of file
      outStream << "P6\n" << display_xSize << " " << display_ySize << "\n255\n";
 
-std::cout<<"Beginning to write";
+//std::cout<<"Beginning to write";
     for (int y = 0; y < display_ySize; y++)
     {
         for(int x = 0; x < display_xSize; x++)
@@ -94,6 +99,8 @@ int pnm_write_pixel(int x, int y, const float rgb []){
 
 // read the color for a given pixel
 int pnm_read_pixel(int x, int y, float rgb []){
+ //   std::cout<<rgb[0]<<" ";
+
     rgb[0] = *(Image+ y*display_xSize*totalColors + x*totalColors + 0);
     rgb[1] = *(Image+ y*display_xSize*totalColors + x*totalColors + 1);
     rgb[2] = *(Image+ y*display_xSize*totalColors + x*totalColors + 2);

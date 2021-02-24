@@ -92,11 +92,9 @@ int REDirect::rd_frame_end(void)
 
 void REDirect::check_write_pixel(int x, int y) {
     // Check if pixel is within bounds
-    if((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize))
+    if(!((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize)))
     {
-        std::cout<<"Cannot write the pixel"<<" x: "<<x<<", y: "<<y<<std::endl;
-    }
-    else{
+
         rd_write_pixel(int(x), int(y), DrawColor);
     }
 }
@@ -147,11 +145,11 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     float dx = x1 - x0;
     float dy = y1 - y0;
 
-    std::cout<<"dy :"<<dy<<" dx: "<<dx;
+  //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
 
     // More horizontal
     if(abs(dy)<=abs(dx)){
-        std::cout<<"dy<dx";
+  //      std::cout<<"dy<dx";
         if(dx<=0){
             swap(x0, x1);
             swap(y0, y1);
@@ -162,10 +160,10 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     else{
         // if dy<0, swap end points (by reference)
         if(dy<0){
-            std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+       //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
             swap(x0, x1);
             swap(y0, y1);
-            std::cout<<"swap complete";
+     //       std::cout<<"swap complete";
         }
 //        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
         line_more_vertical(x0,y0,x1,y1);
@@ -190,11 +188,11 @@ void REDirect::line_more_horizontal(float xs, float ys, float xe, float ye)
         yi = -1;
         dy = -dy;
     }
-    std::cout<<"y :"<<y<<" ye: "<<ye;
+ //   std::cout<<"y :"<<y<<" ye: "<<ye;
 
     while(x<=xe){
         // Draw the first point
-        std::cout<<"x :"<<x<<" y: "<<y<<std::endl;
+ //       std::cout<<"x :"<<x<<" y: "<<y<<std::endl;
 
         check_write_pixel(int(x), int(y));
         if(p<0){
@@ -326,7 +324,7 @@ void REDirect::fill_helper(int x, int y){
     int D[2] = {x+1, y};
     int A[2] = {x-1, y};
     int W[2] = {x, y+1};
-    int S[2] = {x, y-1};yy
+    int S[2] = {x, y-1};
 // recursive calls
     fill_helper(D[0], D[1]);
     fill_helper(A[0], A[1]);

@@ -1,9 +1,9 @@
 # This is a test/example rd file
 
-Display "EdgeTest"  "Screen" "rgbsingle"
+Display "fill1 windows"  "Screen" "rgbsingle"
 Format 1000 1000
 
-# Testing filling at edges
+# Square intersecting lines, replace point, color
 
 Background 0.12 0.14 0.2
 

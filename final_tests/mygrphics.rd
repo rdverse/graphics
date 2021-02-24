@@ -1,18 +1,16 @@
-# Chamelion
+# Creating an artifact
 
-Display "EdgeTest"  "Screen" "rgbsingle"
+Display "MyGraphics"  "Screen" "rgbsingle"
 Format 650 1000
 
-# Testing filling at edges
 
-Background 0.9 0.9 0.9
+Background 0.12 0.14 0.2
 
 # The next three lines will be ignored by your renderer
 CameraEye 200 200 -200
 CameraAt  200 200 0
 CameraUp  0.0 -1.0 0.0
 
-Background 0.12 0.14 0.2
 
 FrameBegin 1
 
@@ -74,9 +72,7 @@ Line 320 600 0 320 660 0
 
 
 
-
 #Mouth NOse color
-
 
 Color 0.8 0.8 0.8
 Fill 314 646 0
@@ -211,6 +207,12 @@ Color 0.5 0.2 0.1
 Fill 22 500 0
 
 
+Color 0.6 0.6 0.6
+Line 320 250 0 320 900 0
+Fill 25 266 0
+
+Color 0.8 0.8 0.8
+Fill 428 881 0
 
 
 WorldEnd

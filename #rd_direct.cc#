@@ -16,7 +16,8 @@ int frame_number;
 //const int X_resolution;
 //const int Y_resolution;
  float BackgroundColor[] = {0.0 ,  0.0 , 0.0};
-double xform[4][4];
+
+
 
 
 

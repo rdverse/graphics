@@ -12,12 +12,19 @@ using std::swap;
 int frame_number;
 // store value of current color in global value
  float DrawColor[] = {1.0, 1.0, 1.0};
-//const float color_black[3] = {100,0,0};
-//const int X_resolution;
-//const int Y_resolution;
- float BackgroundColor[] = {0.0 ,  0.0 , 0.0};
+
+float BackgroundColor[] = {0.0 ,  0.0 , 0.0};
+
 double xform[4][4];
 
+class xformsPipe {
+    double xform[4][4];
+public:
+    void set_values (int,int);
+    int area (void);
+}
+
+xformsPipe xformStack[10];
 
 
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
@@ -59,6 +66,21 @@ int REDirect::rd_world_begin(void) {
         std::cerr << RD_INPUT_DISPLAY_INITIALIZATION_ERROR;
         return (RD_INPUT_DISPLAY_INITIALIZATION_ERROR);
     }
+
+// Set the initial xform as an identity matrix
+    for(unsigned int i = 0; i < 4; i++) {
+        xform[t][t] = 1;
+    }
+
+    //The world to camera transformation can be computed using the camera eyepoint, look at point and up vector.
+
+    //The camera to clipping coordinate transformation matrix can be computed using the near and far clipping depths and the field of view.
+
+    //These last two transformations can be combined and stored as the world to clipping coordinate matrix.
+
+    //////////////////////// Next thing to figure out ///////////////////////////
+    //The clipping coordinate to device coordinate transform is also computed here.
+
 }
 
 int REDirect::rd_world_end(void)
@@ -82,15 +104,54 @@ int REDirect::rd_frame_end(void)
 }
 
 
-//int REDirect::rd_render_init(void)
-//{
-//    return RD_OK;
-//}
-//
-//int REDirect::rd_render_cleanup(void)
-//{
-//    return RD_OK;
-//}
+/**********************   Camera  ******************************************/
+
+int rd_camera_eye(const float eyepoint[3]){
+    // Store the values passed in into the global variable(s) set aside for this purpose.
+}
+int rd_camera_at(const float atpoint[3]) {
+//    Store in global variables.
+
+}
+int rd_camera_up(const float up[3]){
+    // Store globally.
+}
+int rd_camera_fov(float fov) {
+    // Store globally.
+}
+int rd_clipping(float znear, float zfar) {
+    // Store the values in the near and far global clipping depths respectively.
+}
+
+/**********************   Transformations **********************************/
+
+int rd_translate(const float offset[3]){
+    // Takes an array of three floats, creates a translation matrix and multiplies it by the current transform, storing the result back in the current transform.
+}
+int rd_scale(const float scale_factor[3]){
+    // Takes an array of three floats, the scale factors in x, y, and z, creates a scale matrix and multiplies it by the current transform,
+    // storing the result back in the current transform.
+}
+int rd_rotate_xy(float angle){
+    // Takes a float which is the angle of rotation in degrees and creates a rotation matrix in the xy plane.
+    // The matrix is multiplied by the current transformation matrix and the results stored back in the current transform.
+}
+int rd_rotate_yz(float angle){
+    //Ditto in the yz plane.
+}
+int rd_rotate_zx(float angle){
+    // Same here.
+}
+int rd_matrix(const float * mat);
+
+int rd_xform_push(void){
+    // Push a copy of the current transform onto the transformation stack. The current transformation is left unchanged.
+}
+int rd_xform_pop(void){
+    // Pop the top of the transformation stack into the current transform.
+}
+
+/***********************************************************/
 
 void REDirect::check_write_pixel(int x, int y) {
     // Check if pixel is within bounds
@@ -112,9 +173,11 @@ int REDirect::rd_color(const float color[])
 }
 
  int REDirect::rd_point(const float p[3]){
-    // ONly have to write the pixel at the given co-ordinates
-     check_write_pixel(int(p[0]),int(p[1]));
-    return(RD_OK);
+
+    // Only have to write the pixel at the given co-ordinates
+    // Takes a point, turns it into a homogeneous point and passes it to the point pipeline.
+    check_write_pixel(int(p[0]),int(p[1]));
+     return(RD_OK);
 }
 
 // store background color in global variable
@@ -143,35 +206,44 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     float x1 = end[0];
     float y1 = end[1];
 
+    bool draw = true;
+
+    line_pipeline(x0,y0,x1,y1, draw);
+
+
+    return(RD_OK);
+}
+
+
+void REDirect::line_pipeline(float x0, float y0, float x1, float y1, bool func = false){
+
     // Calculate dx (start-end)x
     float dx = x1 - x0;
     float dy = y1 - y0;
 
-  //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
+    //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
 
     // More horizontal (dx>dy)
     if(abs(dy)<=abs(dx)){
-  //      std::cout<<"dy<dx";
+        //      std::cout<<"dy<dx";
         if(dx<0){
             swap(x0, x1);
             swap(y0, y1);
         }
         line_more_horizontal(x0,y0,x1,y1);
     }
-    //more vertical (dy>dx)
-    else{
+        //more vertical (dy>dx)
+    else {
         // if dy<0, swap end points (by reference)
-        if(dy<0){
-       //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+        if (dy < 0) {
+            //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
             swap(x0, x1);
             swap(y0, y1);
-     //       std::cout<<"swap complete";
+            //       std::cout<<"swap complete";
         }
 //        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
-        line_more_vertical(x0,y0,x1,y1);
+        line_more_vertical(x0, y0, x1, y1);
     }
-
-    return(RD_OK);
 }
 
 void REDirect::line_more_horizontal(float xs, float ys, float xe, float ye)

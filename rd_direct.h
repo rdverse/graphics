@@ -41,7 +41,12 @@ void check_write_pixel(int x, int y);
 
  int rd_background(const float color[]);
 
- int rd_line(const float start[3], const float end[3]);
+int rd_line(const float start[3], const float end[3]);
+void line_pipeline(float x0, float y0, float x1, float y1, bool func);
+void line_more_horizontal(float xs, float ys, float xe, float ye);
+void line_more_vertical(float xs, float ys, float xe, float ye);
+
+
      int rd_circle(const float center[3], float radius);
 
  void circle_plot_points(int x, int y, int xp, int yp);
@@ -51,8 +56,26 @@ void check_write_pixel(int x, int y);
 bool boundary_check(int x, int y);
     void swap_points(float &p1, float &p2);
 
-void line_more_horizontal(float xs, float ys, float xe, float ye);
-    void line_more_vertical(float xs, float ys, float xe, float ye);
+
+    /**********************   Camera  ******************************************/
+
+     int rd_camera_eye(const float eyepoint[3]);
+     int rd_camera_at(const float atpoint[3]);
+     int rd_camera_up(const float up[3]);
+     int rd_camera_fov(float fov);
+     int rd_clipping(float znear, float zfar);
+
+    /**********************   Transformations **********************************/
+
+     int rd_translate(const float offset[3]);
+     int rd_scale(const float scale_factor[3]);
+     int rd_rotate_xy(float angle);
+     int rd_rotate_yz(float angle);
+     int rd_rotate_zx(float angle);
+     int rd_matrix(const float * mat);
+
+     int rd_xform_push(void);
+     int rd_xform_pop(void);
 
     //
 //

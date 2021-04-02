@@ -2,7 +2,7 @@
 #define RD_ENGINE_DIRECT_H
 
 #include "rd_enginebase.h"
-
+#include<array>
 #include <string>
 using std::string;
 
@@ -57,7 +57,15 @@ bool boundary_check(int x, int y);
     void swap_points(float &p1, float &p2);
 
 
-    /**********************   Camera  ******************************************/
+    /************ Transformation stack helpers **********/
+    void multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2);
+    void crossProduct(float A[], float B[], float C[]);
+    void normalize_vector(float vect[]);
+
+        void calc_w2c_params(void);
+        void world_to_camera(void);
+
+        /**********************   Camera  ******************************************/
 
      int rd_camera_eye(const float eyepoint[3]);
      int rd_camera_at(const float atpoint[3]);

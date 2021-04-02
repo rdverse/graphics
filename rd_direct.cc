@@ -6,25 +6,106 @@
 #include<math.h>
 #include<cmath>
 #include <string>
+#include<array>
+#include<stack>
 using std::string;
 using std::swap;
+
 // global variable to store frame_no
 int frame_number;
-// store value of current color in global value
- float DrawColor[] = {1.0, 1.0, 1.0};
 
+// global colors
+float DrawColor[] = {1.0, 1.0, 1.0};
 float BackgroundColor[] = {0.0 ,  0.0 , 0.0};
 
-double xform[4][4];
+// Global xforms
+std::array<std::array<double,4>,4> currentXform;
 
-class xformsPipe {
-    double xform[4][4];
-public:
-    void set_values (int,int);
-    int area (void);
+std::array<std::array<double,4>,4> o2w;
+std::array<std::array<double,4>,4> w2c;
+std::array<std::array<double,4>,4> c2c;
+std::array<std::array<double,4>,4> c2d;
+
+
+std::stack<std::array<std::array<double,4>,4>> xforms;
+
+//global vectors
+//we have
+float E[3];
+float At[3];
+float Up[3];
+float FOV;
+float Znear;
+float Zfar;
+
+// we dont have
+float U[3];
+float V[3];
+float A[3];
+
+
+////////////////////Transformation stack help////////////////
+
+void REDirect::multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2){
+    for (unsigned int i = 0; i < 3; i++) {
+        for (unsigned int  j = 0;j < 3;j++) {
+            mul[i][j] = 0;
+            for (unsigned int  k = 0;k < 3;k++) {
+                mul[i][j] += m1[i][k] * m2[k][j];
+            }
+        }
+    }
 }
 
-xformsPipe xformStack[10];
+void REDirect::crossProduct(float A[], float B[], float C[]) {
+    C[0] = A[1] * B[2] - A[2] * B[1];
+    C[1] = -(A[0] * B[2] - A[2] * B[0]);
+    C[2] = A[0] * B[1] - A[1] * B[0];
+}
+
+
+void REDirect::normalize_vector(float vect[]){
+    float vectNorm = sqrt(pow(vect[0], 2) + pow(vect[1], 2) + pow(vect[2], 2));
+    vect[0] = vect[0]/vectNorm;
+    vect[1] = vect[1]/vectNorm;
+    vect[2] = vect[2]/vectNorm;
+}
+
+void REDirect::calc_w2c_params(void){
+    // A = At- E
+    A[0] = At[0] - E[0];
+    A[1] = At[1] - E[1];
+    A[2] = At[2] - E[2];
+    // Normalize A
+    normalize_vector(A);
+    // V = AXUp
+    crossProduct(A, Up, V);
+    // Normalize V
+    normalize_vector(V);
+    // U = VXA
+    crossProduct(V, A, U);
+}
+
+//////////////////////Transformation stack////////////////////////
+ void REDirect::world_to_camera(void){
+
+     calc_w2c_params();
+   // Using the given eye point, look at point and up vector,
+   // all expressed in world coordinates, returns the transformation from world to camera coordinates.
+
+    std::array<std::array<double,4>,4> mat1 = {{{V[0],V[1],V[2],0},
+                                                {U[0],U[1],U[2],0},
+                                                {A[0],A[1],A[2],0},
+                                                {0   ,0   ,0   ,1}}};
+
+    std::array<std::array<double,4>,4> mat2 = {{{1,0,0,-E[0]},
+                                                {0,1,0,-E[1]},
+                                                {0,0,1,-E[2]},
+                                                {0,0,0,   1}}};
+
+multiply(w2c, mat1, mat2);
+
+}
 
 
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
@@ -59,21 +140,21 @@ int REDirect::rd_world_begin(void) {
     // float testreturn[3] = {0,0,0};
     // check_write_pixel(10,10, testreturn);
     //rd_print_error(RD_OK, "s01.rd");
-    try {
-        return (rd_disp_init_frame(frame_number));
-    }
-    catch (std::exception &e) {
-        std::cerr << RD_INPUT_DISPLAY_INITIALIZATION_ERROR;
-        return (RD_INPUT_DISPLAY_INITIALIZATION_ERROR);
-    }
 
-// Set the initial xform as an identity matrix
+    // Set the initial xform as an identity matrix
     for(unsigned int i = 0; i < 4; i++) {
-        xform[t][t] = 1;
+        for (unsigned int j = 0; j < 4; j++) {
+            if(i==j)
+            {
+                currentXform[i][j] = 1;
+            }
+            else{
+                currentXform[i][j] = 0;
+            }
+        }
     }
-
     //The world to camera transformation can be computed using the camera eyepoint, look at point and up vector.
-
+    world_to_camera();
     //The camera to clipping coordinate transformation matrix can be computed using the near and far clipping depths and the field of view.
 
     //These last two transformations can be combined and stored as the world to clipping coordinate matrix.
@@ -81,6 +162,14 @@ int REDirect::rd_world_begin(void) {
     //////////////////////// Next thing to figure out ///////////////////////////
     //The clipping coordinate to device coordinate transform is also computed here.
 
+
+    try {
+        return (rd_disp_init_frame(frame_number));
+    }
+    catch (std::exception &e) {
+        std::cerr << RD_INPUT_DISPLAY_INITIALIZATION_ERROR;
+        return (RD_INPUT_DISPLAY_INITIALIZATION_ERROR);
+    }
 }
 
 int REDirect::rd_world_end(void)
@@ -106,48 +195,80 @@ int REDirect::rd_frame_end(void)
 
 /**********************   Camera  ******************************************/
 
-int rd_camera_eye(const float eyepoint[3]){
+int REDirect::rd_camera_eye(const float eyepoint[3]){
+    E[0] = eyepoint[0];
+    E[1] = eyepoint[1];
+    E[2] = eyepoint[2];
     // Store the values passed in into the global variable(s) set aside for this purpose.
+    return(RD_OK);
 }
-int rd_camera_at(const float atpoint[3]) {
+int REDirect::rd_camera_at(const float atpoint[3]) {
+
 //    Store in global variables.
+    At[0] = atpoint[0];
+    At[1] = atpoint[1];
+    At[2] = atpoint[2];
+    return(RD_OK);
+}
+
+int REDirect::rd_camera_up(const float up[3]){
+    // Store globally.
+    Up[0] = up[0];
+    Up[1] = up[1];
+    Up[2] = up[2];
+    return(RD_OK);
 
 }
-int rd_camera_up(const float up[3]){
+int REDirect::rd_camera_fov(float fov) {
     // Store globally.
+    FOV = fov;
+    return(RD_OK);
 }
-int rd_camera_fov(float fov) {
-    // Store globally.
-}
-int rd_clipping(float znear, float zfar) {
+int REDirect::rd_clipping(float znear, float zfar) {
     // Store the values in the near and far global clipping depths respectively.
+     Znear = znear;
+     Zfar = zfar;
+    return(RD_OK);
 }
 
 /**********************   Transformations **********************************/
 
-int rd_translate(const float offset[3]){
+int REDirect::rd_translate(const float offset[3]){
     // Takes an array of three floats, creates a translation matrix and multiplies it by the current transform, storing the result back in the current transform.
+    return(RD_OK);
 }
-int rd_scale(const float scale_factor[3]){
+int REDirect::rd_scale(const float scale_factor[3]){
     // Takes an array of three floats, the scale factors in x, y, and z, creates a scale matrix and multiplies it by the current transform,
     // storing the result back in the current transform.
+    return(RD_OK);
 }
-int rd_rotate_xy(float angle){
+int REDirect::rd_rotate_xy(float angle){
     // Takes a float which is the angle of rotation in degrees and creates a rotation matrix in the xy plane.
     // The matrix is multiplied by the current transformation matrix and the results stored back in the current transform.
+    return(RD_OK);
 }
-int rd_rotate_yz(float angle){
+int REDirect::rd_rotate_yz(float angle){
     //Ditto in the yz plane.
+    return(RD_OK);
 }
-int rd_rotate_zx(float angle){
+int REDirect::rd_rotate_zx(float angle){
     // Same here.
+    return(RD_OK);
 }
-int rd_matrix(const float * mat);
-
-int rd_xform_push(void){
+int REDirect::rd_matrix(const float * mat){
+    return(RD_OK);
+}
+//check
+int REDirect::rd_xform_push(void){
+    xforms.push(currentXform);
     // Push a copy of the current transform onto the transformation stack. The current transformation is left unchanged.
+    return(RD_OK);
 }
-int rd_xform_pop(void){
+//check
+int REDirect::rd_xform_pop(void){
+    std::copy(&xforms.top()[0][0], &xforms.top()[0][0] + 4*4, &currentXform[0][0]);
+    xforms.pop();
+    return(RD_OK);
     // Pop the top of the transformation stack into the current transform.
 }
 

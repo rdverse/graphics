@@ -41,29 +41,34 @@ void check_write_pixel(int x, int y);
 
  int rd_background(const float color[]);
 
-int rd_line(const float start[3], const float end[3]);
-void line_pipeline(float x0, float y0, float x1, float y1, bool func);
-void line_more_horizontal(float xs, float ys, float xe, float ye);
-void line_more_vertical(float xs, float ys, float xe, float ye);
+
+ /////////Line//////////////////////
+    int rd_line(const float start[3], const float end[3]);
+    void line_pipeline(float starth[], float endh[], bool draw);
+    void line_more_horizontal(float xs, float ys, float xe, float ye);
+    void line_more_vertical(float xs, float ys, float xe, float ye);
 
 
      int rd_circle(const float center[3], float radius);
+     void circle_plot_points(int x, int y, int xp, int yp);
 
- void circle_plot_points(int x, int y, int xp, int yp);
      int rd_fill(const float seed_point[3]);
-
- void fill_helper(int x, int y);
-bool boundary_check(int x, int y);
-    void swap_points(float &p1, float &p2);
+     void fill_helper(int x, int y);
+     bool boundary_check(int x, int y);
+     void swap_points(float &p1, float &p2);
 
 
     /************ Transformation stack helpers **********/
-    void multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2);
-    void crossProduct(float A[], float B[], float C[]);
+    void pointh(const float cartesian[3], float homo[]);
+        void multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2);
+    void multiply(float transp[], float pointHomo[], std::array<std::array<double,4>,4> transform);
+
+        void crossProduct(float A[], float B[], float C[]);
     void normalize_vector(float vect[]);
 
-        void calc_w2c_params(void);
-        void world_to_camera(void);
+    void calc_w2c_params(void);
+    void world_to_camera(void);
+    void clip_to_device(void);
 
         /**********************   Camera  ******************************************/
 

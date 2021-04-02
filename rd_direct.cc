@@ -46,16 +46,32 @@ float A[3];
 
 ////////////////////Transformation stack help////////////////
 
+void REDirect::pointh(const float cartesian[3], float homo[]){
+    std::copy(&cartesian[0], &cartesian[0] + 3, &homo[0]);
+    homo[3] = 1;
+}
+
 void REDirect::multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2){
-    for (unsigned int i = 0; i < 3; i++) {
-        for (unsigned int  j = 0;j < 3;j++) {
+    for (unsigned int i = 0; i < 4; i++) {
+        for (unsigned int  j = 0;j < 4;j++) {
             mul[i][j] = 0;
-            for (unsigned int  k = 0;k < 3;k++) {
+            for (unsigned int  k = 0;k < 4;k++) {
                 mul[i][j] += m1[i][k] * m2[k][j];
             }
         }
     }
 }
+
+void REDirect::multiply(float transp[], float pointHomo[], std::array<std::array<double,4>,4> transform){
+
+    for (unsigned int i = 0; i < 4; i++) {
+        transp[i] = 0;
+        for (unsigned int  j = 0;j < 4;j++) {
+                transp[i] += transform[i][j] * pointHomo[j];
+        }
+    }
+}
+
 
 void REDirect::crossProduct(float A[], float B[], float C[]) {
     C[0] = A[1] * B[2] - A[2] * B[1];
@@ -86,7 +102,10 @@ void REDirect::calc_w2c_params(void){
     crossProduct(V, A, U);
 }
 
+
+
 //////////////////////Transformation stack////////////////////////
+            //////////World to Camera////////////
  void REDirect::world_to_camera(void){
 
      calc_w2c_params();
@@ -107,7 +126,34 @@ multiply(w2c, mat1, mat2);
 
 }
 
+             /////Clip to device/////
+ void REDirect::clip_to_device(void){
 
+
+    // Create the clip to device matrix here
+    //
+//                 calc_w2c_params();
+//                 // Using the given eye point, look at point and up vector,
+//                 // all expressed in world coordinates, returns the transformation from world to camera coordinates.
+//
+                 c2d = {{{(double)display_xSize,0,0,0},
+                        {0, -(double)display_ySize,0,(double)display_ySize},
+                        {0,0,1,0},
+                        {0   ,0   ,0,1}}};
+//
+//                 std::array<std::array<double,4>,4> mat2 = {{{1,0,0,-E[0]},
+//                                                                    {0,1,0,-E[1]},
+//                                                                    {0,0,1,-E[2]},
+//                                                                    {0,0,0,   1}}};
+//
+//                 multiply(w2c, mat1, mat2);
+
+             }
+
+
+
+
+/////////////////////Main stuff///////////////////////////////////////////
 int REDirect::rd_display(const string & name, const string & type, const string & mode)
 {
     // Nothing to implement in this function, everthing is done behind the scenes
@@ -319,51 +365,79 @@ void REDirect::swap_points(float &p1, float &p2){
 
 int REDirect::rd_line(const float start[3], const float end[3]){
 
-    // Read the coordinates of line start point
-    float x0 = start[0];
-    float y0 = start[1];
-
-    // Read coordinates of line end point
-    float x1 = end[0];
-    float y1 = end[1];
 
     bool draw = true;
 
-    line_pipeline(x0,y0,x1,y1, draw);
+    // convert point to homogeneous here
+    float starth[4];
+    pointh(start, starth);
+    float endh[4];
+    pointh(end, endh);
+//
+//    std::cout<<"start homo coordinates :"<<starth[0]<<" "<<starth[1]<<" "<<starth[2]<<" "<<starth[3];
+//    std::cout<<"end homo coordinates :"<<endh[0]<<" "<<endh[1]<<" "<<endh[2]<<" "<<endh[3];
 
+    line_pipeline(starth,endh, draw);
 
     return(RD_OK);
 }
 
 
-void REDirect::line_pipeline(float x0, float y0, float x1, float y1, bool func = false){
+void REDirect::line_pipeline(float starth[], float endh[], bool draw = false){
 
-    // Calculate dx (start-end)x
-    float dx = x1 - x0;
-    float dy = y1 - y0;
+    // Step 4) clip to device coordinates
+    clip_to_device();
+    float startt[4];
+    float endt[4];
 
-    //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
+    multiply(startt, starth, c2d);
+    multiply(endt, endh, c2d);
 
-    // More horizontal (dx>dy)
-    if(abs(dy)<=abs(dx)){
-        //      std::cout<<"dy<dx";
-        if(dx<0){
-            swap(x0, x1);
-            swap(y0, y1);
-        }
-        line_more_horizontal(x0,y0,x1,y1);
-    }
-        //more vertical (dy>dx)
-    else {
-        // if dy<0, swap end points (by reference)
-        if (dy < 0) {
-            //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
-            swap(x0, x1);
-            swap(y0, y1);
-            //       std::cout<<"swap complete";
-        }
+    // Read the coordinates of line start point
+    float x0 = startt[0];
+    float y0 = startt[1];
+
+    // Read coordinates of line end point
+    float x1 = endt[0];
+    float y1 = endt[1];
+
+    std::cout<<"start coordinates :"<<startt[0]<<" "<<startt[1]<<" "<<startt[2];
+    std::cout<<"end coordinates :"<<endt[0]<<" "<<endt[1]<<" "<<endt[2];
+
+    if(draw){
+                // Calculate dx (start-end)x
+                float dx = x1 - x0;
+                float dy = y1 - y0;
+
+                //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
+
+                // More horizontal (dx>dy)
+                if (abs(dy)<=abs(dx)){
+                    //      std::cout<<"dy<dx";
+                    if (dx < 0) {
+                        swap(x0, x1);
+                        swap(y0, y1);
+                    }
+                    line_more_horizontal(x0, y0, x1, y1);
+                }
+                //more vertical (dy>dx)
+                else {
+                    // if dy<0, swap end points (by reference)
+                    if (dy < 0) {
+                        //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+                        swap(x0, x1);
+                        swap(y0, y1);
+                        //       std::cout<<"swap complete";
+                    }
 //        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
-        line_more_vertical(x0, y0, x1, y1);
+                    line_more_vertical(x0, y0, x1, y1);
+                }
+        }
+    else{
+        // move
+        //
+        std::cout<<"Not a draw";
+
     }
 }
 

@@ -1,7 +1,7 @@
 #include<iostream>
 #include<stack>
 #include<array>
-
+#include<cmath>
 //class xforms{
 //    float x2[2][2];
 //public:
@@ -81,7 +81,12 @@ const float amber[3] = {1,2,3};
     std::copy(&amber[0], &amber[0] + 3, &amberh[0]);
 
     print_amber(amberh);
-    std::cout<<amberh[3];
+    std::cout<<amberh[3]<<std::endl<<std::endl;
+
+    float param = 90.0;
+    float result = tan ( (param/(2*180.0)) *M_PI);
+    printf("The tangent of %f degrees is %f.\n", param, result );
+
     return 0;
 
 }

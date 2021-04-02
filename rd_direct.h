@@ -60,7 +60,8 @@ void check_write_pixel(int x, int y);
 
     /************ Transformation stack helpers **********/
     void pointh(const float cartesian[3], float homo[]);
-        void multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2);
+    void multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2);
+
     void multiply(float transp[], float pointHomo[], std::array<std::array<double,4>,4> transform);
 
         void crossProduct(float A[], float B[], float C[]);
@@ -68,7 +69,8 @@ void check_write_pixel(int x, int y);
 
     void calc_w2c_params(void);
     void world_to_camera(void);
-    void clip_to_device(void);
+    void camera_to_clip(void);
+        void clip_to_device(void);
 
         /**********************   Camera  ******************************************/
 
@@ -92,24 +94,7 @@ void check_write_pixel(int x, int y);
 
     //
 //
-//    /**********************   Camera  ******************************************/
-////
-//     int rd_camera_eye(const float eyepoint[3]);
-//     int rd_camera_at(const float atpoint[3]);
-//     int rd_camera_up(const float up[3]);
-//    int rd_camera_fov(float fov);
-//     int rd_clipping(float znear, float zfar);
-//    //  /**********************   Transformations **********************************/
-////
-//     int rd_translate(const float offset[3]);
-//     int rd_scale(const float scale_factor[3]);
-//     int rd_rotate_xy(float angle);
-//     int rd_rotate_yz(float angle);
-//     int rd_rotate_zx(float angle);
-//     int rd_matrix(const float * mat);
-//
-//     int rd_xform_push(void);
-//     int rd_xform_pop(void);
+
 ////
 ////  /**********************   Geometric Objects  *******************************/
 ////

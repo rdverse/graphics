@@ -44,7 +44,9 @@ void check_write_pixel(int x, int y);
 
  /////////Line//////////////////////
     int rd_line(const float start[3], const float end[3]);
-    void line_pipeline(float starth[], float endh[], bool draw);
+    //void line_pipeline(float starth[], float endh[], bool draw);
+    void line_pipeline(float lineH[], bool draw);
+    void draw_line(float lineHcurr[]);
     void line_more_horizontal(float xs, float ys, float xe, float ye);
     void line_more_vertical(float xs, float ys, float xe, float ye);
 
@@ -59,7 +61,7 @@ void check_write_pixel(int x, int y);
 
 
     /************ Transformation stack helpers **********/
-    void pointh(const float cartesian[3], float homo[]);
+    void pointh( float homo[], const float cartesian[3]);
     void multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2);
 
     void multiply(float transp[], float pointHomo[], std::array<std::array<double,4>,4> transform);

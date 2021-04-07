@@ -20,8 +20,7 @@ float DrawColor[] = {1.0, 1.0, 1.0};
 float BackgroundColor[] = {0.0 ,  0.0 , 0.0};
 
 //global line points
-float lineP1[4];
-float lineP2[4];
+float lineHprev[4];
 
 // Global xforms
 std::array<std::array<double,4>,4> currentXform;
@@ -51,8 +50,24 @@ float A[3];
 
 ////////////////////Transformation stack help////////////////
 
-void REDirect::pointh(const float cartesian[3], float homo[]){
-    std::copy(&cartesian[0], &cartesian[0] + 3, &homo[0]);
+void REDirect::pointh(float homo[], const float cartesian[3]){
+//
+//    std::cout<<"w2c matrix"<<std::endl;
+//    for(int i = 0; i<4;i++){
+//        for(int j = 0; j<4;j++){
+//            std::cout<<w2c[i][j]<<" ";
+//        }
+//        std::cout<<std::endl;
+//    }
+//
+//    std::cout<<"c2c matrix"<<std::endl;
+//    for(int i = 0; i<4;i++){
+//        for(int j = 0; j<4;j++){
+//            std::cout<<c2c[i][j]<<" ";
+//        }
+//        std::cout<<std::endl;
+//    }
+    std::copy(&cartesian[0], &cartesian[0] + 4, &homo[0]);
     homo[3] = 1;
 }
 
@@ -168,6 +183,14 @@ void REDirect::camera_to_clip(void){
 //                                                                    {0,0,0,   1}}};
 //
 //                 multiply(w2c, mat1, mat2);
+
+std::cout<<"Clip to device is here";
+                 for(int i = 0; i<4;i++){
+                     for(int j = 0; j<4;j++){
+                         std::cout<<c2d[i][j]<<" ";
+                     }
+                     std::cout<<std::endl;
+                 }
 
              }
 
@@ -302,15 +325,40 @@ int REDirect::rd_clipping(float znear, float zfar) {
 /**********************   Transformations **********************************/
 
 int REDirect::rd_translate(const float offset[3]){
+    std::cout<<offset[0]<<" "<<offset[1]<<" "<<offset[2];
     // Takes an array of three floats, creates a translation matrix and multiplies it by the current transform, storing the result back in the current transform.
-        for(unsigned int i=0;i<3;i++){
-            currentXform[i][3] = currentXform[i][3] + offset[i];
+    std::array<std::array<double,4>,4> translateMatrix = {{{1,0,0,offset[0]},
+                                                                  {0,1,0,offset[1]},
+                                                                  {0,0,1,offset[2]},
+                                                                  {0,0,0,1}}};
+    std::array<std::array<double,4>,4> tempCur;
+
+    std::copy(&currentXform[0][0], &currentXform[0][0] + 4*4, &tempCur[0][0]);
+
+        std::cout<<"o2w matrix"<<std::endl;
+
+
+    multiply(currentXform, tempCur, translateMatrix);
+
+    for(int i = 0; i<4;i++){
+        for(int j = 0; j<4;j++){
+            std::cout<<currentXform[i][j]<<" ";
         }
+        std::cout<<std::endl;
+    }
+
     return(RD_OK);
 }
 int REDirect::rd_scale(const float scale_factor[3]){
     // Takes an array of three floats, the scale factors in x, y, and z, creates a scale matrix and multiplies it by the current transform,
     // storing the result back in the current transform.
+    std::array<std::array<double,4>,4> scaleMatrix = {{{scale_factor[0],0,0,0},
+                                                                  {0,scale_factor[0],0,0},
+                                                                  {0,0,scale_factor[0],0},
+                                                                  {0,0,0,1}}};
+    std::array<std::array<double,4>,4> tempCur;
+    std::copy(&currentXform[0][0], &currentXform[0][0] + 4*4, &tempCur[0][0]);
+    multiply(currentXform, tempCur, scaleMatrix);
     return(RD_OK);
 }
 int REDirect::rd_rotate_xy(float angle){
@@ -392,18 +440,16 @@ void REDirect::swap_points(float &p1, float &p2){
 
 int REDirect::rd_line(const float start[3], const float end[3]){
 
-
     bool draw = false;
 
     // convert point to homogeneous here and then send into line pipeline
+    std::cout<<"rd line start coordinates :"<<start[0]<<" "<<start[1]<<" "<<start[2]<<std::endl;
 
     float starth[4];
     float endh[4];
-    pointh(start, starth);
-    pointh(end, endh);
-
-//    std::cout<<"start homo coordinates :"<<starth[0]<<" "<<starth[1]<<" "<<starth[2]<<" "<<starth[3];
-//    std::cout<<"end homo coordinates :"<<endh[0]<<" "<<endh[1]<<" "<<endh[2]<<" "<<endh[3];
+    pointh(starth, start);
+    pointh(endh, end);
+    std::cout<<"rd line homogeneousstart coordinates :"<<starth[0]<<" "<<starth[1]<<" "<<starth[2]<<std::endl;
 
     // set p1
     // draw is false, move only
@@ -411,32 +457,36 @@ int REDirect::rd_line(const float start[3], const float end[3]){
     draw = true;
     // move and draw line
     line_pipeline(endh, draw);
+    std::cout<<"complete executing line";
 
     return(RD_OK);
 }
 
 
-void REDirect::line_pipeline(float starth[], float endh[], bool draw = false){
+void REDirect::line_pipeline(float lineH[], bool draw = false){
 
-    float startt1[4];
-    float endt1[4];
-
-    float startt2[4];
-    float endt2[4];
-
-    float startt3[4];
-    float endt3[4];
+    float lineH1[4];
+    float lineH2[4];
+    float lineH3[4];
 
 
+    std::cout<<"initial start coordinates :"<<lineH[0]<<" "<<lineH[1]<<" "<<lineH[2]<<" "<<lineH[3]<<std::endl;
 
-    std::cout<<"initial start coordinates :"<<starth[0]<<" "<<starth[1]<<" "<<starth[2]<<std::endl;
-    std::cout<<"initial end coordinates :"<<endh[0]<<" "<<endh[1]<<" "<<endh[2]<<std::endl<<std::endl;
+    // step 1 : object to world transformation
+    multiply(lineH1, lineH, currentXform);
+    std::cout<<"after o2w start coordinates :"<<lineH1[0]<<" "<<lineH1[1]<<" "<<lineH1[2]<<" "<<lineH1[3]<<std::endl;
+
+    // step 2
+    multiply(lineH2, lineH1, w2c);
+    std::cout<<"after w2c start coordinates :"<<lineH2[0]<<" "<<lineH2[1]<<" "<<lineH2[2]<<" "<<lineH2[3]<<std::endl;
+
+    // step3
+    multiply(lineH3, lineH2, c2c);
+    std::cout<<"c2c start coordinates :"<<lineH3[0]<<" "<<lineH3[1]<<" "<<lineH3[2]<<" "<<lineH3[3]<<std::endl;
 
 
-    multiply(startt1, starth, currentXform);
-
-    std::cout<<"after o2w start coordinates :"<<startt1[0]<<" "<<startt1[1]<<" "<<startt1[2]<<std::endl;
-    std::cout<<"after o2w end coordinates :"<<endt1[0]<<" "<<endt1[1]<<" "<<endt1[2]<<std::endl<<std::endl;
+    // Step 4) clip to device coordinates
+  //  multiply(startt3, startt2, c2d);
 
 
 //    std::array<std::array<double,4>,4> aftero2c;
@@ -449,109 +499,82 @@ void REDirect::line_pipeline(float starth[], float endh[], bool draw = false){
 //    multiply(afterc2d, afterc2c, c2d);
 
 
-//    // step 2
-    multiply(startt2, startt1, w2c);
-    multiply(endt2, endt1, w2c);
-//
-//
-    std::cout<<"after w2c start coordinates :"<<startt2[0]<<" "<<startt[1]<<" "<<startt2[2]<<std::endl;
-    std::cout<<"after w2c end coordinates :"<<endt2[0]<<" "<<endt2[1]<<" "<<endt2[2]<<std::endl<<std::endl;
-//
-//
 
-//    //step 3
-    multiply(startt3, startt2, c2c);
-    multiply(endt3, endt2, c2c);
+//    std::cout<<"w2c matrix"<<std::endl;
+//    for(int i = 0; i<4;i++){
+//        for(int j = 0; j<4;j++){
+//            std::cout<<w2c[i][j]<<" ";
+//        }
+//        std::cout<<std::endl;
+//    }
 //
-//
-//    std::cout<<"c2c start coordinates :"<<startt[0]<<" "<<startt[1]<<" "<<startt[2]<<std::endl;
-//    std::cout<<"c2c end coordinates :"<<endt[0]<<" "<<endt[1]<<" "<<endt[2]<<std::endl<<std::endl;
+//    std::cout<<"c2c matrix"<<std::endl;
+//    for(int i = 0; i<4;i++){
+//        for(int j = 0; j<4;j++){
+//            std::cout<<c2c[i][j]<<" ";
+//        }
+//        std::cout<<std::endl;
+//    }
 
-    // Step 4) clip to device coordinates
+if(draw){
+    draw_line(lineH);
+}
+else{
+    std::copy(&lineH[0], &lineH[0] + 4, &lineHprev[0]);
+}
+}
 
-//
-    multiply(startt, startt3, c2d);
-    multiply(endt, endt3, c2d);
 
+void REDirect::draw_line(float lineHcurr[]){
 
-    std::cout<<"c2d start coordinates :"<<startt[0]<<" "<<startt[1]<<" "<<startt[2]<<std::endl;
-    std::cout<<"c2d end coordinates :"<<endt[0]<<" "<<endt[1]<<" "<<endt[2]<<std::endl<<std::endl;
-
+    float p1[4];
+    float p2[4];
+    //convert clip to device coords here
+    multiply(p1, lineHprev, c2d);
+    multiply(p2, lineHcurr, c2d);
+    std::cout<<"after c2d start coordinates :"<<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<std::endl;
+    std::cout<<"after c2d end coordinates :"<<p2[0]<<" "<<p2[1]<<" "<<p2[2]<<std::endl;
 
     // Read the coordinates of line start point
-    float x0 = startt[0];
-    float y0 = startt[1];
+    float x0 = p1[0];
+    float y0 = p1[1];
 
     // Read coordinates of line end point
-    float x1 = endt[0];
-    float y1 = endt[1];
+    float x1 = p2[0];
+    float y1 = p2[1];
 
-    std::cout<<"start coordinates :"<<startt[0]<<" "<<startt[1]<<" "<<startt[2];
-    std::cout<<"end coordinates :"<<endt[0]<<" "<<endt[1]<<" "<<endt[2];
+    std::cout<<"start coordinates :"<<p1[0]<<" "<<p1[1]<<" "<<p1[2];
+    std::cout<<"end coordinates :"<<p2[0]<<" "<<p2[1]<<" "<<p2[2];
+        // Calculate dx (start-end)x
+        float dx = x1 - x0;
+        float dy = y1 - y0;
 
+        //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
 
-    std::cout<<"w2c matrix"<<std::endl;
-    for(int i = 0; i<4;i++){
-        for(int j = 0; j<4;j++){
-            std::cout<<w2c[i][j]<<" ";
+        // More horizontal (dx>dy)
+        if (abs(dy)<=abs(dx)){
+            //      std::cout<<"dy<dx";
+            if (dx < 0) {
+                swap(x0, x1);
+                swap(y0, y1);
             }
-        std::cout<<std::endl;
-    }
-
-    std::cout<<"c2c matrix"<<std::endl;
-    for(int i = 0; i<4;i++){
-        for(int j = 0; j<4;j++){
-            std::cout<<c2c[i][j]<<" ";
+            line_more_horizontal(x0, y0, x1, y1);
         }
-        std::cout<<std::endl;
-    }
-
-
-
-    if(draw){
-                // Calculate dx (start-end)x
-                float dx = x1 - x0;
-                float dy = y1 - y0;
-
-                //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
-
-                // More horizontal (dx>dy)
-                if (abs(dy)<=abs(dx)){
-                    //      std::cout<<"dy<dx";
-                    if (dx < 0) {
-                        swap(x0, x1);
-                        swap(y0, y1);
-                    }
-                    line_more_horizontal(x0, y0, x1, y1);
-                }
-                //more vertical (dy>dx)
-                else {
-                    // if dy<0, swap end points (by reference)
-                    if (dy < 0) {
-                        //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
-                        swap(x0, x1);
-                        swap(y0, y1);
-                        //       std::cout<<"swap complete";
-                    }
+            //more vertical (dy>dx)
+        else {
+            // if dy<0, swap end points (by reference)
+            if (dy < 0) {
+                //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+                swap(x0, x1);
+                swap(y0, y1);
+                //       std::cout<<"swap complete";
+            }
 //        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
-                    line_more_vertical(x0, y0, x1, y1);
-                }
+            line_more_vertical(x0, y0, x1, y1);
         }
-    else{
-        // move
-        //
-        std::cout<<"Not a draw";
-
     }
-}
 
-void REDirect::move_point(){
 
-}
-
-void REDirect::draw_line(){
-
-}
 
 void REDirect::line_more_horizontal(float xs, float ys, float xe, float ye)
 {
@@ -671,7 +694,6 @@ void REDirect::circle_plot_points(int x, int y, int xp, int yp){
     check_write_pixel(xp-y, yp-x);
 }
 
-
 ////////////////////////Fill /////////////////////////
 // Round the color valuesand ceil in nearest integer
 double round_up_ceil(double value, int decimal_points = 1) {
@@ -684,16 +706,6 @@ double round_up_ceil(double value, int decimal_points = 1) {
 fill_helper(int(seed_point[0]), int(seed_point[1]));
 return(RD_OK);
 }
-
-//void REDirect::fill_helper(int x, int y){
-//
-//    for(int new_xs=new_xe=xs; (new_xe<0) && (new_xe>=display_xSize) && (y<0) && (y>=display_ySize)){
-//
-//
-//    }
-//
-//}
-
 
 void REDirect::fill_helper(int x, int y){
 

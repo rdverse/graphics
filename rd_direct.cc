@@ -47,7 +47,8 @@ float U[3];
 float V[3];
 float A[3];
 
-
+//for approximated stuff
+float NSEG = 12;
 ////////////////////Transformation stack help////////////////
 
 void REDirect::pointh(float homo[], const float cartesian[3]){
@@ -93,7 +94,7 @@ void REDirect::multiply(float transp[], float pointHomo[], std::array<std::array
 }
 
 
-void REDirect::crossProduct(float A[], float B[], float C[]) {
+void REDirect::crossProduct(float C[], float A[], float B[]) {
     C[0] = ((A[1] * B[2]) - (A[2] * B[1]));
     C[1] = ((A[2] * B[0]) - (A[0] * B[2]));
     C[2] = ((A[0] * B[1]) - (A[1] * B[0]));
@@ -115,15 +116,31 @@ void REDirect::calc_w2c_params(void){
     // Normalize A
     normalize_vector(A);
     // V = AXUp
-    crossProduct( A,Up, V);
+    crossProduct( V,A, Up);
     // Normalize V
     normalize_vector(V);
     // U = VXA
-    crossProduct(A,V, U);
+    crossProduct(U,V, A);
+
+    std::cout<<std::endl<<"V : "<<V[0]<<" "<<V[1]<<" "<<V[2]<<std::endl;
+    std::cout<<std::endl<<"U : "<<U[0]<<" "<<U[1]<<" "<<U[2]<<std::endl;
+    std::cout<<std::endl<<"A : "<<A[0]<<" "<<A[1]<<" "<<A[2]<<std::endl;
+
+
 }
 
 
+void REDirect::print_matrix(string stringp, std::array<std::array<double,4>,4> transform ){
+    std::cout<<std::endl<<stringp<<std::endl;
+    for(int i = 0; i<4;i++){
+        for(int j = 0; j<4;j++){
+            std::cout<<transform[i][j]<<" ";
+        }
+        std::cout<<std::endl;
+    }
+std::cout<<std::endl;
 
+}
 //////////////////////Transformation stack////////////////////////
             //////////World to Camera////////////
  void REDirect::world_to_camera(void){
@@ -149,10 +166,9 @@ multiply(w2c, mat1, mat2);
 //////////Camera to clip////////////
 void REDirect::camera_to_clip(void){
 
-    float tant2 =  tan((FOV/(2*180.0)) *M_PI);
+    float tant2 =  tan((FOV/(2*180.0))*M_PI);
     float a = (float)display_xSize/(float)display_ySize;
 
-    std::cout<<std::endl<<display_xSize<<" "<<a<<" "<<display_ySize<<std::endl;
     c2c = {{{ (1/(2*a*tant2)),0,0.5,0},
            {0,(1/(2*tant2)),0.5,0},
            {0,0,(Zfar/(Zfar-Znear)),-((Zfar*Znear)/(Zfar-Znear))},
@@ -184,15 +200,7 @@ void REDirect::camera_to_clip(void){
 //
 //                 multiply(w2c, mat1, mat2);
 
-std::cout<<"Clip to device is here";
-                 for(int i = 0; i<4;i++){
-                     for(int j = 0; j<4;j++){
-                         std::cout<<c2d[i][j]<<" ";
-                     }
-                     std::cout<<std::endl;
-                 }
-
-             }
+}
 
 
 
@@ -335,45 +343,69 @@ int REDirect::rd_translate(const float offset[3]){
 
     std::copy(&currentXform[0][0], &currentXform[0][0] + 4*4, &tempCur[0][0]);
 
-        std::cout<<"o2w matrix"<<std::endl;
-
-
     multiply(currentXform, tempCur, translateMatrix);
-
-    for(int i = 0; i<4;i++){
-        for(int j = 0; j<4;j++){
-            std::cout<<currentXform[i][j]<<" ";
-        }
-        std::cout<<std::endl;
-    }
 
     return(RD_OK);
 }
+
 int REDirect::rd_scale(const float scale_factor[3]){
     // Takes an array of three floats, the scale factors in x, y, and z, creates a scale matrix and multiplies it by the current transform,
     // storing the result back in the current transform.
     std::array<std::array<double,4>,4> scaleMatrix = {{{scale_factor[0],0,0,0},
-                                                                  {0,scale_factor[0],0,0},
-                                                                  {0,0,scale_factor[0],0},
+                                                                  {0,scale_factor[1],0,0},
+                                                                  {0,0,scale_factor[2],0},
                                                                   {0,0,0,1}}};
     std::array<std::array<double,4>,4> tempCur;
     std::copy(&currentXform[0][0], &currentXform[0][0] + 4*4, &tempCur[0][0]);
     multiply(currentXform, tempCur, scaleMatrix);
     return(RD_OK);
 }
+
 int REDirect::rd_rotate_xy(float angle){
     // Takes a float which is the angle of rotation in degrees and creates a rotation matrix in the xy plane.
     // The matrix is multiplied by the current transformation matrix and the results stored back in the current transform.
+    float  theta = (angle/180)*M_PI;
+
+    std::array<std::array<double,4>,4> xyMatrix = {{{cos(theta),  -sin(theta),0,0},
+                                                      {sin(theta),cos(theta),0,0},
+                                                      {0,         0,         1,0},
+                                                      {0,         0,         0,1}}};
+
+    std::array<std::array<double,4>,4> tempCur;
+    std::copy(&currentXform[0][0], &currentXform[0][0] + 4*4, &tempCur[0][0]);
+    multiply(currentXform, tempCur, xyMatrix);
     return(RD_OK);
 }
+
 int REDirect::rd_rotate_yz(float angle){
     //Ditto in the yz plane.
+    float theta = (angle/180)*M_PI;
+
+    std::array<std::array<double,4>,4> yzMatrix = {{{1,  0,                  0,   0},
+                                                   {0,   cos(theta), -sin(theta),  0},
+                                                   {0,   sin(theta), cos(theta),  0},
+                                                   {0,            0,          0,  1}}};
+
+    std::array<std::array<double,4>,4> tempCur;
+    std::copy(&currentXform[0][0], &currentXform[0][0] + 4*4, &tempCur[0][0]);
+    multiply(currentXform, tempCur, yzMatrix);
     return(RD_OK);
 }
 int REDirect::rd_rotate_zx(float angle){
     // Same here.
+    float theta = (angle/180)*M_PI;
+
+    std::array<std::array<double,4>,4> zxMatrix = {{{ cos(theta), 0,       -sin(theta),       0},
+                                                   {0,            1,                 0,       0},
+                                                   {0,   sin(theta),        cos(theta),       0},
+                                                   {0,            0,                 0,       1}}};
+
+    std::array<std::array<double,4>,4> tempCur;
+    std::copy(&currentXform[0][0], &currentXform[0][0] + 4*4, &tempCur[0][0]);
+    multiply(currentXform, tempCur, zxMatrix);
     return(RD_OK);
 }
+
 int REDirect::rd_matrix(const float * mat){
     return(RD_OK);
 }
@@ -470,19 +502,24 @@ void REDirect::line_pipeline(float lineH[], bool draw = false){
     float lineH3[4];
 
 
-    std::cout<<"initial start coordinates :"<<lineH[0]<<" "<<lineH[1]<<" "<<lineH[2]<<" "<<lineH[3]<<std::endl;
+    std::cout<<std::endl<<"initial start coordinates :"<<lineH[0]<<" "<<lineH[1]<<" "<<lineH[2]<<" "<<lineH[3]<<std::endl;
 
     // step 1 : object to world transformation
     multiply(lineH1, lineH, currentXform);
-    std::cout<<"after o2w start coordinates :"<<lineH1[0]<<" "<<lineH1[1]<<" "<<lineH1[2]<<" "<<lineH1[3]<<std::endl;
+    print_matrix("object to world", currentXform);
+    std::cout<<"after o2w start coordinates :"<<std::endl<<lineH1[0]<<" "<<lineH1[1]<<" "<<lineH1[2]<<" "<<lineH1[3]<<std::endl;
+
 
     // step 2
+    print_matrix("world to camera", w2c);
     multiply(lineH2, lineH1, w2c);
-    std::cout<<"after w2c start coordinates :"<<lineH2[0]<<" "<<lineH2[1]<<" "<<lineH2[2]<<" "<<lineH2[3]<<std::endl;
+    std::cout<<"after w2c start coordinates :"<<std::endl<<lineH2[0]<<" "<<lineH2[1]<<" "<<lineH2[2]<<" "<<lineH2[3]<<std::endl;
 
     // step3
+    print_matrix("camera to clip", c2c);
+
     multiply(lineH3, lineH2, c2c);
-    std::cout<<"c2c start coordinates :"<<lineH3[0]<<" "<<lineH3[1]<<" "<<lineH3[2]<<" "<<lineH3[3]<<std::endl;
+    // std::cout<<"c2c start coordinates :"<<std::endl<<lineH3[0]<<" "<<lineH3[1]<<" "<<lineH3[2]<<" "<<lineH3[3]<<std::endl;
 
 
     // Step 4) clip to device coordinates
@@ -500,27 +537,11 @@ void REDirect::line_pipeline(float lineH[], bool draw = false){
 
 
 
-//    std::cout<<"w2c matrix"<<std::endl;
-//    for(int i = 0; i<4;i++){
-//        for(int j = 0; j<4;j++){
-//            std::cout<<w2c[i][j]<<" ";
-//        }
-//        std::cout<<std::endl;
-//    }
-//
-//    std::cout<<"c2c matrix"<<std::endl;
-//    for(int i = 0; i<4;i++){
-//        for(int j = 0; j<4;j++){
-//            std::cout<<c2c[i][j]<<" ";
-//        }
-//        std::cout<<std::endl;
-//    }
-
 if(draw){
-    draw_line(lineH);
+    draw_line(lineH3);
 }
 else{
-    std::copy(&lineH[0], &lineH[0] + 4, &lineHprev[0]);
+    std::copy(&lineH3[0], &lineH3[0] + 4, &lineHprev[0]);
 }
 }
 
@@ -529,11 +550,18 @@ void REDirect::draw_line(float lineHcurr[]){
 
     float p1[4];
     float p2[4];
+
+    print_matrix("clip to device", c2d);
+
+    std::cout<<"c2c start coordinates :"<<std::endl<<lineHprev[0]<<" "<<lineHprev[1]<<" "<<lineHprev[2]<<" "<<lineHprev[3]<<std::endl;
+    std::cout<<"c2c start coordinates :"<<std::endl<<lineHcurr[0]<<" "<<lineHcurr[1]<<" "<<lineHcurr[2]<<" "<<lineHcurr[3]<<std::endl;
+
     //convert clip to device coords here
     multiply(p1, lineHprev, c2d);
     multiply(p2, lineHcurr, c2d);
-    std::cout<<"after c2d start coordinates :"<<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<std::endl;
-    std::cout<<"after c2d end coordinates :"<<p2[0]<<" "<<p2[1]<<" "<<p2[2]<<std::endl;
+
+    std::cout<<"after c2d start coordinates :"<<std::endl<<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<std::endl;
+    std::cout<<"after c2d end coordinates :"<<std::endl<<p2[0]<<" "<<p2[1]<<" "<<p2[2]<<std::endl;
 
     // Read the coordinates of line start point
     float x0 = p1[0];
@@ -864,40 +892,285 @@ bool REDirect::boundary_check(int x, int y){
 ////}
 //
 //
-//int REDirect::rd_pointset(const string & vertex_type,
-//                int nvertex, const float * vertex)
-//{
-//    return RD_OK;
-//}
+void REDirect::point_pipeline(float pH[]){
+
+    float pH1[4];
+    float pH2[4];
+    float pH3[4];
+    float pH4[4];
+
+    std::cout<<std::endl<<"initial start coordinates :"<<pH[0]<<" "<<pH[1]<<" "<<pH[2]<<" "<<pH[3]<<std::endl;
+
+    // step 1 : object to world transformation
+    multiply(pH1, pH, currentXform);
+    print_matrix("object to world", currentXform);
+    std::cout<<"after o2w start coordinates :"<<std::endl<<pH1[0]<<" "<<pH1[1]<<" "<<pH1[2]<<" "<<pH1[3]<<std::endl;
+
+
+    // step 2
+    print_matrix("world to camera", w2c);
+    multiply(pH2, pH1, w2c);
+    std::cout<<"after w2c start coordinates :"<<std::endl<<pH2[0]<<" "<<pH2[1]<<" "<<pH2[2]<<" "<<pH2[3]<<std::endl;
+
+    // step3
+    print_matrix("camera to clip", c2c);
+
+    multiply(pH3, pH2, c2c);
+    // std::cout<<"c2c start coordinates :"<<std::endl<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
+
+    print_matrix("clip to device", c2d);
+
+    std::cout<<"after c2c  :"<<std::endl<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
+
+    //convert clip to device coords here
+    multiply(pH4, pH3, c2d);
+
+    std::cout<<"after c2d  :"<<std::endl<<pH4[0]<<" "<<pH4[1]<<" "<<pH4[2]<<" "<<pH4[3]<<std::endl;
+
+    rd_write_pixel(int(pH4[0]), int(pH4[1]), DrawColor);
+}
+
+
+int REDirect::rd_pointset(const string & vertex_type,
+                int nvertex, const float * vertex)
+{
+    for(int i=0;i<nvertex;i++){
+        float p[4];
+        p[0] = vertex[i*3];
+        p[1] = vertex[i*3+1];
+        p[2] = vertex[i*3+2];
+        p[3] = 1;
+        point_pipeline(p);
+    }
+    return RD_OK;
+}
+
+int REDirect::rd_polyset(const string & vertex_type,
+               int nvertex, const float * vertex,
+               int nface,   const int * face)
+{
+    // this flag tells us if it is the start of the face, in which case, point has to be moved only
+    bool faceStart = true;
+    int faceCount = 0;
+
+    for(int i = 0; i< nface;i++){
+        // use i variable to make sure all faces are covered
+
+        // see if a -1 is encountered
+        if(face[i+faceCount]!=-1){
+
+            float p[3];
+            // extract the vertex index from list of faces and then draw the face
+            p[0] = vertex[face[i+faceCount]*3];//x
+            p[1] = vertex[face[i+faceCount]*3+1];//y
+            p[2] = vertex[face[i+faceCount]*3+2];//z
+
+            // start of the face then only move the point
+            if(faceStart){
+                line_pipeline(p, false);
+                }
+            // else draw
+            else{
+                line_pipeline(p, true);
+            }
+            //set the start flag as false
+            faceStart=false;
+        }
+
+        else{
+            //if -1 is encountered faceStart is true.
+            // increment faceCount so that we go to next face in the list
+    faceCount++;
+    faceStart = true;
+    }
+    }
+    return RD_OK;
+}
+
+
+int REDirect::rd_cone(float height, float radius, float thetamax)
+{
+    // draw base of the cone first
+    for (int i=0; i<NSEG-1; i++){
+
+
+        // get the point
+        float p1[3]; //first point of triangle
+        float p2[3]; // middle point of triangle
+        float p3[3]; // next point of a triangle
+
+        float angle1 = (i / NSEG) * thetamax;
+        float angle2 = ((i+1) / NSEG) * thetamax;
+
+        // x1 = x0 + rcos
+        p1[0] = radius * cos((angle1/180)*M_PI);
+        // y1 = y0 + rsin
+        p1[1] = radius * sin((angle1/180)*M_PI);
+        // zmin or max
+        p1[2] = 0;
+
+        // x3 = x0 + rcos
+        p3[0] = radius * cos((angle2/180)*M_PI);
+        // y3 = y0 + rsin
+        p3[1] = radius * sin((angle2/180)*M_PI);
+        // z = 0
+        p3[2] = 0;
+
+        //middle point of triangle
+        // x average
+        p2[0] = (p1[0] + p3[0])/2;
+        //y average
+        p2[1] = (p1[0] + p3[0])/2;
+        // height
+        p2[2] = height;
+
+        // draw the triangle
+        line_pipeline(p1, false);
+        line_pipeline(p2, true);
+        line_pipeline(p3, true);
+        line_pipeline(p1, true);
+
+    }
+    // and now the lines
+    return RD_OK;
+}
+
+int REDirect::rd_cube(void)
+{
+    float cpoints[8][3] = {{0,0,0},
+                            {1,0,0},
+                            {1,1,0},
+                            {0,1,0},
+                            {0,0,1},
+                            {1,0,1},
+                            {1,1,1},
+                            {0,1,1}};
+
+    int faces[6][4] =  {{0,1,5,4},
+                        {1,2,6,5},
+                        {3,2,1,0},
+                        {4,5,6,7},
+                        {3,7,6,2},
+                        {4,7,3,0}};
+
+
+    for(int i=0;i<6;i++){
+        for(int j=0;j<4;j++){
+            // get the point
+            float p[3];
+            //std::copy(&cpoints[faces[i][j]], &cpoints[faces[i][j]] + 3, &p1[0]);
+            p[0] = cpoints[faces[i][j]][0];
+            p[1] = cpoints[faces[i][j]][1];
+            p[2] = cpoints[faces[i][j]][2];
+
+            if(j==0) {
+              //move only
+              line_pipeline(p, false);
+                //  std::copy(&cpoints[faces[i][j+1]], &cpoints[faces[i][j+1]] + 3, &p2[0]);
+            }
+            else{
+                line_pipeline(p,true);
+                // move and draw
+                //std::copy(&cpoints[faces[i][0]], &cpoints[faces[i][0]] + 3, &p2[0]);
+            }
+        }
+    }
 //
-//int REDirect::rd_polyset(const string & vertex_type,
-//               int nvertex, const float * vertex,
-//               int nface,   const int * face)
-//{
-//    return RD_OK;
-//}
+//    float a[3] = {0,0,0};
+//    float b[3] = {1,0,0};
+//    rd_line(a,b);
 //
-//
-//int REDirect::rd_cone(float height, float radius, float thetamax)
-//{
-//    return RD_OK;
-//}
-//
-//int REDirect::rd_cube(void)
-//{
-//    return RD_OK;
-//}
-//
-//int REDirect::rd_cylinder(float radius, float zmin,
-//                float zmax, float thetamax)
-//{
-//    return RD_OK;
-//}
-//
-//int REDirect::rd_disk(float height, float radius, float theta)
-//{
-//    return RD_OK;
-//}
+//    float a1[3] = {0,1,0};
+//    float b1[3] = {2,1,0};
+//    rd_line(a1,b1);
+////
+////    float a[3] = {0,1,0};
+////    float b[3] = {1,0,0};
+////    rd_line(a,b);
+
+    return RD_OK;
+
+
+}
+
+int REDirect::rd_cylinder(float radius, float zmin,
+                float zmax, float thetamax)
+{
+
+// draw 2 circles at zmin and zmax
+float zcoords[2] = {zmin, zmax};
+    for(int zs=0;zs<2;zs++){
+        for (int i=0; i<NSEG; i++){
+            float angle = (i / NSEG) * thetamax;
+
+            // get the point
+            float p[3];
+            // x = x0 + rcos
+            p[0] = radius * cos((angle/180)*M_PI);
+            // y = y0 + rsin
+            p[1] = radius * sin((angle/180)*M_PI);
+            // zmin or max
+            p[2] = zcoords[zs];
+
+            if (i == 0) {
+                //move only
+                line_pipeline(p, false);
+            } else {
+                line_pipeline(p, true);
+                // move and draw
+            }
+        }
+    }
+
+    // draw lines between both the circles
+    for(int i = 0 ; i<NSEG;i++){
+        float angle = (i / NSEG) * thetamax;
+        float pstart[3];
+        float pend[3];
+        pstart[0] = radius * cos((angle/180)*M_PI);
+        pstart[1] = radius * sin((angle/180)*M_PI);
+        pstart[2] = zmin;
+
+        pend[0] = radius * cos((angle/180)*M_PI);
+        pend[1] = radius * sin((angle/180)*M_PI);
+        pend[2] = zmax;
+        rd_line(pstart, pend);
+    }
+
+    return RD_OK;
+}
+
+int REDirect::rd_disk(float height, float radius, float theta)
+{
+    float NSEG = 12;
+    // store indices where the 0, cos and sin occur
+    for(float h=0;h<height;h++){
+        for (int i=0; i<NSEG; i++){
+            float angle = (i / NSEG) * theta;
+            // get the point
+            float p[3];
+            //std::copy(&cpoints[faces[i][j]], &cpoints[faces[i][j]] + 3, &p1[0]);
+
+            // x = x0 + rcos
+            p[0] = radius * cos((angle/180)*M_PI);
+            // y = y0 + rsin
+            p[1] = radius * sin((angle/180)*M_PI);
+            // height along z axis
+            p[2] = h;
+
+            if (i == 0) {
+                //move only
+                line_pipeline(p, false);
+                //  std::copy(&cpoints[faces[i][j+1]], &cpoints[faces[i][j+1]] + 3, &p2[0]);
+            } else {
+                line_pipeline(p, true);
+                // move and draw
+                //std::copy(&cpoints[faces[i][0]], &cpoints[faces[i][0]] + 3, &p2[0]);
+            }
+        }
+    }
+    return RD_OK;
+}
 //
 //
 //int REDirect::rd_hyperboloid(const float start[3], const float end[3],
@@ -913,10 +1186,39 @@ bool REDirect::boundary_check(int x, int y){
 //    return RD_OK;
 //}
 //
-//int REDirect::rd_sphere(float radius, float zmin, float zmax, float thetamax)
-//{
-//    return RD_OK;
-//}
+int REDirect::rd_sphere(float radius, float zmin, float zmax, float thetamax)
+{
+
+    // store indices where the 0, cos and sin occur
+    int circles[3][3] = {{2,0,1},{0,1,2},{1,0,2}};
+
+    for(int c=0;c<3;c++){
+            for (int i=0; i<NSEG; i++){
+                float theta = (i / NSEG) * thetamax;
+                // get the point
+                float p[3];
+                //std::copy(&cpoints[faces[i][j]], &cpoints[faces[i][j]] + 3, &p1[0]);
+                // first position in circle array is 0
+                p[circles[i][0]] = 0;
+                // second position in circle array is cos
+                p[circles[i][1]] = radius * cos((theta/180)*M_PI);
+                // third position in circle array is sin
+                p[circles[i][2]] = radius * sin((theta/180)*M_PI);
+
+                if (i == 0) {
+                    //move only
+                    line_pipeline(p, false);
+                    //  std::copy(&cpoints[faces[i][j+1]], &cpoints[faces[i][j+1]] + 3, &p2[0]);
+                } else {
+                    line_pipeline(p, true);
+                    // move and draw
+                    //std::copy(&cpoints[faces[i][0]], &cpoints[faces[i][0]] + 3, &p2[0]);
+                }
+            }
+    }
+
+    return RD_OK;
+}
 //
 //int REDirect::rd_sqsphere(float radius, float north, float east,
 //                float zmin, float zmax, float thetamax)

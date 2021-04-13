@@ -36,6 +36,7 @@ int rd_frame_end(void);
 
 void check_write_pixel(int x, int y);
 
+void print_matrix(string stringp, std::array<std::array<double,4>,4> transform );
 
     int rd_point(const float p[3]);
 
@@ -120,24 +121,25 @@ void check_write_pixel(int x, int y);
 //                           int nseg, const int * seg);
 //
 //
-//     int rd_pointset(const string & vertex_type,
-//                            int nvertex, const float * vertex);
-//     int rd_polyset(const string & vertex_type,
-//                           int nvertex, const float * vertex,
-//                           int nface,   const int * face);
-//
-//     int rd_cone(float height, float radius, float thetamax);
-//     int rd_cube(void);
-//     int rd_cylinder(float radius, float zmin,
-//                            float zmax, float thetamax);
-//     int rd_disk(float height, float radius, float theta);
+    void point_pipeline(float pH[]);
+     int rd_pointset(const string & vertex_type,
+                            int nvertex, const float * vertex);
+     int rd_polyset(const string & vertex_type,
+                           int nvertex, const float * vertex,
+                           int nface,   const int * face);
+
+     int rd_cone(float height, float radius, float thetamax);
+     int rd_cube(void);
+     int rd_cylinder(float radius, float zmin,
+                            float zmax, float thetamax);
+     int rd_disk(float height, float radius, float theta);
 //
 //     int rd_hyperboloid(const float start[3], const float end[3],
 //                               float thetamax);
 //
 //     int rd_paraboloid(float rmax, float zmin,
 //                              float zmax, float thetamax);
-//     int rd_sphere(float radius, float zmin, float zmax, float thetamax);
+     int rd_sphere(float radius, float zmin, float zmax, float thetamax);
 //     int rd_sqsphere(float radius, float north, float east,
 //                            float zmin, float zmax, float thetamax);
 //     int rd_sqtorus(float radius1, float radius2,

@@ -24,6 +24,10 @@ float lineHprev[4];
 
 // Global xforms
 std::array<std::array<double,4>,4> currentXform;
+//std::array<std::array<std::array<double,4>,4>,20>
+double xforms[10][4][4];
+int xformIndex = 0;
+
 
 std::array<std::array<double,4>,4> o2w;
 std::array<std::array<double,4>,4> w2c;
@@ -49,7 +53,7 @@ float V[3];
 float A[3];
 
 //for approximated stuff
-float NSEG = 120;
+float NSEG = 54;
 ////////////////////Transformation stack help////////////////
 
 void REDirect::pointh(float homo[], const float cartesian[3]){
@@ -94,13 +98,11 @@ void REDirect::multiply(float transp[], float pointHomo[], std::array<std::array
     }
 }
 
-
 void REDirect::crossProduct(float C[], float A[], float B[]) {
     C[0] = ((A[1] * B[2]) - (A[2] * B[1]));
     C[1] = ((A[2] * B[0]) - (A[0] * B[2]));
     C[2] = ((A[0] * B[1]) - (A[1] * B[0]));
 }
-
 
 void REDirect::normalize_vector(float vect[]){
     float vectNorm = sqrt(pow(vect[0], 2) + pow(vect[1], 2) + pow(vect[2], 2));
@@ -414,6 +416,16 @@ int REDirect::rd_matrix(const float * mat){
 int REDirect::rd_xform_push(void){
   //  xforms.push(currentXform);
     // Push a copy of the current transform onto the transformation stack. The current transformation is left unchanged.
+print_matrix("push current", currentXform);
+    xformIndex = xformIndex + 1;
+    for(unsigned int i = 0; i < 4; i++) {
+        for (unsigned int j = 0; j < 4; j++) {
+
+                xforms[xformIndex][i][j] = currentXform[i][j];
+
+        }
+    }
+
     return(RD_OK);
 }
 //check
@@ -421,17 +433,18 @@ int REDirect::rd_xform_pop(void){
    // std::copy(&xforms.top()[0][0], &xforms.top()[0][0] + 4*4, &currentXform[0][0]);
    // xforms.pop();
     // Set the initial xform as an identity matrix
+    //xformIndex = xformIndex-1;
+
+    print_matrix("before pop", currentXform);
     for(unsigned int i = 0; i < 4; i++) {
         for (unsigned int j = 0; j < 4; j++) {
-            if(i==j)
-            {
-                currentXform[i][j] = 1;
-            }
-            else{
-                currentXform[i][j] = 0;
-            }
-        }}
+                currentXform[i][j] = xforms[xformIndex][i][j];
 
+        }
+    }
+
+    print_matrix("after pop", currentXform);
+    xformIndex =xformIndex-1;
     return(RD_OK);
     // Pop the top of the transformation stack into the current transform.
 }
@@ -972,10 +985,16 @@ void REDirect::point_pipeline(float pH[]){
 
  //   std::cout<<"after c2c  :"<<std::endl<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
 
+
     //convert clip to device coords here
     multiply(pH4, pH3, c2d);
 
+    pH4[0] = pH4[0]/pH4[3];
+    pH4[1] = pH4[1]/pH4[3];
+    pH4[2] = pH4[2]/pH4[3];
+    pH4[3] = pH4[3]/pH4[3];
 //    std::cout<<"after c2d  :"<<std::endl<<pH4[0]<<" "<<pH4[1]<<" "<<pH4[2]<<" "<<pH4[3]<<std::endl;
+
 
     rd_write_pixel(int(pH4[0]), int(pH4[1]), DrawColor);
 }
@@ -996,68 +1015,127 @@ int REDirect::rd_pointset(const string & vertex_type,
 }
 
 int REDirect::rd_polyset(const string & vertex_type,
-               int nvertex, const float * vertex,
-               int nface,   const int * face)
+                         int nvertex, const float * vertex,
+                         int nface,   const int * face)
 {
     // this flag tells us if it is the start of the face, in which case, point has to be moved only
-    bool faceStart = true;
+
+    int vertexTracer = 0;
     int faceCount = 0;
 
-    for(int i = 0; i< nface;i++){
-        // use i variable to make sure all faces are covered
+    // for the variable
+    int startVertex = 0;
+    int currVertex = 0;
 
-        // see if a -1 is encountered
-        if(face[i+faceCount]!=-1){
+int faceTraversed=0;
+    bool draw = false;
 
-            float p[3];
-            // extract the vertex index from list of faces and then draw the face
-            p[0] = vertex[face[i+faceCount]*3];//x
-            p[1] = vertex[face[i+faceCount]*3+1];//y
-            p[2] = vertex[face[i+faceCount]*3+2];//z
+                startVertex = face[vertexTracer];
+            currVertex = face[vertexTracer];
 
-            // start of the face then only move the point
-            if(faceStart){
-                line_pipeline(p, false);
-                }
-            // else draw
-            else{
-                line_pipeline(p, true);
-            }
-            //set the start flag as false
-            faceStart=false;
+    while(true){
+        // for each face, draw all points
+        std::cout<<currVertex<<" ";
+        float p[4];
+
+        if(faceTraversed==nface){
+            break;
+        }
+
+        else if(currVertex==-1){
+            // draw to the initial point
+            draw=true;
+            p[0] = vertex[startVertex*3];
+            p[1] = vertex[startVertex*3+1];
+            p[2] = vertex[startVertex*3+2];
+            p[3] = 1;
+            line_pipeline(p, draw);
+
+            vertexTracer++;
+            currVertex = face[vertexTracer];
+            startVertex = currVertex;
+            draw=false;
+            faceTraversed++;
         }
 
         else{
-            //if -1 is encountered faceStart is true.
-            // increment faceCount so that we go to next face in the list
-    faceCount++;
-    faceStart = true;
-    }
+            p[0] = vertex[currVertex*3];
+            p[1] = vertex[currVertex*3+1];
+            p[2] = vertex[currVertex*3+2];
+            p[3] = 1;
+
+            line_pipeline(p, draw);
+            vertexTracer++;
+            currVertex = face[vertexTracer];
+            draw=true;
+        }
     }
     return RD_OK;
 }
+
+//int REDirect::rd_polyset(const string & vertex_type,
+//               int nvertex, const float * vertex,
+//               int nface,   const int * face)
+//{
+//    // this flag tells us if it is the start of the face, in which case, point has to be moved only
+//    bool faceStart = true;
+//    int faceCount = 0;
+//
+//    for(int i = 0; i< nface;i++){
+//        // use i variable to make sure all faces are covered
+//
+//        // see if a -1 is encountered
+//        if(face[i+faceCount]!=-1){
+//
+//            float p[4];
+//            // extract the vertex index from list of faces and then draw the face
+//            p[0] = vertex[face[i+faceCount]*3];//x
+//            p[1] = vertex[face[i+faceCount]*3+1];//y
+//            p[2] = vertex[face[i+faceCount]*3+2];//z
+//            p[3] = 1;
+//            // start of the face then only move the point
+//            if(faceStart){
+//                line_pipeline(p, false);
+//                }
+//            // else draw
+//            else{
+//                line_pipeline(p, true);
+//            }
+//            //set the start flag as false
+//            faceStart=false;
+//        }
+//
+//        else{
+//            //if -1 is encountered faceStart is true.
+//            // increment faceCount so that we go to next face in the list
+//    faceCount++;
+//    faceStart = true;
+//    }
+//    }
+//    return RD_OK;
+//}
 
 
 int REDirect::rd_cone(float height, float radius, float thetamax)
 {
     // draw base of the cone first
-    for (int i=0; i<NSEG-1; i++){
+    for (int i=0; i<NSEG; i++){
 
 
         // get the point
-        float p1[3]; //first point of triangle
-        float p2[3]; // middle point of triangle
-        float p3[3]; // next point of a triangle
+        float p1[4]; //first point of triangle
+        float p2[4]; // middle point of triangle
+        float p3[4]; // next point of a triangle
 
         float angle1 = (i / NSEG) * thetamax;
         float angle2 = ((i+1) / NSEG) * thetamax;
-
         // x1 = x0 + rcos
         p1[0] = radius * cos((angle1/180)*M_PI);
         // y1 = y0 + rsin
         p1[1] = radius * sin((angle1/180)*M_PI);
         // zmin or max
         p1[2] = 0;
+        p1[3] = 1;
 
         // x3 = x0 + rcos
         p3[0] = radius * cos((angle2/180)*M_PI);
@@ -1065,19 +1143,20 @@ int REDirect::rd_cone(float height, float radius, float thetamax)
         p3[1] = radius * sin((angle2/180)*M_PI);
         // z = 0
         p3[2] = 0;
+        p3[3] = 1;
 
         //middle point of triangle
         // x average
-        p2[0] = (p1[0] + p3[0])/2;
+        p2[0] = 0;//(p1[0] + p3[0])/2;
         //y average
-        p2[1] = (p1[0] + p3[0])/2;
+        p2[1] = 0;//(p1[0] + p3[0])/2;
         // height
         p2[2] = height;
-
+        p2[3] = 1;
         // draw the triangle
         line_pipeline(p1, false);
-        line_pipeline(p2, true);
         line_pipeline(p3, true);
+        line_pipeline(p2, true);
         line_pipeline(p1, true);
 
     }
@@ -1127,7 +1206,7 @@ int REDirect::rd_cube(void)
             if(j==0) {
               //move only
               //std::cout<<faces[i][j]<<" ";
-                std::cout<<cpoints[faces[i][j]][0]<<" "<<cpoints[faces[i][j]][1]<<" "<<cpoints[faces[i][j]][2]<<std::endl;
+              //  std::cout<<cpoints[faces[i][j]][0]<<" "<<cpoints[faces[i][j]][1]<<" "<<cpoints[faces[i][j]][2]<<std::endl;
 
                 line_pipeline(p, false);
                 //  std::copy(&cpoints[faces[i][j+1]], &cpoints[faces[i][j+1]] + 3, &p2[0]);
@@ -1135,7 +1214,7 @@ int REDirect::rd_cube(void)
             else{
 
 //                std::cout<<faces[i][j]<<" ";
-                std::cout<<cpoints[faces[i][j]][0]<<" "<<cpoints[faces[i][j]][1]<<" "<<cpoints[faces[i][j]][2]<<std::endl;
+                //std::cout<<cpoints[faces[i][j]][0]<<" "<<cpoints[faces[i][j]][1]<<" "<<cpoints[faces[i][j]][2]<<std::endl;
 
                 line_pipeline(p,true);
                 // move and draw
@@ -1168,43 +1247,70 @@ int REDirect::rd_cylinder(float radius, float zmin,
 {
 
 // draw 2 circles at zmin and zmax
-float zcoords[2] = {zmin, zmax};
-    for(int zs=0;zs<2;zs++){
-        for (int i=0; i<NSEG; i++){
-            float angle = (i / NSEG) * thetamax;
-
-            // get the point
-            float p[3];
-            // x = x0 + rcos
-            p[0] = radius * cos((angle/180)*M_PI);
-            // y = y0 + rsin
-            p[1] = radius * sin((angle/180)*M_PI);
-            // zmin or max
-            p[2] = zcoords[zs];
-
-            if (i == 0) {
-                //move only
-                line_pipeline(p, false);
-            } else {
-                line_pipeline(p, true);
-                // move and draw
-            }
-        }
-    }
+//float zcoords[2] = {zmin, zmax};
+//    for(int zs=0;zs<2;zs++){
+//        for (int i=0; i<NSEG; i++){
+//            float angle = i /NSEG;
+//
+//            // get the point
+//            float p[3];
+//            // x = x0 + rcos
+//            p[0] = radius * cos((angle/180)*M_PI);
+//            // y = y0 + rsin
+//            p[1] = radius * sin((angle/180)*M_PI);
+//            // zmin or max
+//            p[2] = zcoords[zs];
+//
+//            if (i == 0) {
+//                //move only
+//                line_pipeline(p, false);
+//            } else {
+//                line_pipeline(p, true);
+//                // move and draw
+//            }
+//        }
+//    }
 
     // draw lines between both the circles
-    for(int i = 0 ; i<NSEG;i++){
-        float angle = (i / NSEG) * thetamax;
-        float pstart[3];
-        float pend[3];
-        pstart[0] = radius * cos((angle/180)*M_PI);
-        pstart[1] = radius * sin((angle/180)*M_PI);
-        pstart[2] = zmin;
 
-        pend[0] = radius * cos((angle/180)*M_PI);
-        pend[1] = radius * sin((angle/180)*M_PI);
-        pend[2] = zmax;
-        rd_line(pstart, pend);
+
+    for(int i = 0 ; i<NSEG;i++){
+       // float angle = (i / NSEG) * thetamax;
+
+        float angle1 = (i / NSEG) * thetamax;
+        float angle2 = ((i+1) / NSEG) * thetamax;
+
+        float p1[4];
+        float p2[4];
+        float p3[4];
+        float p4[4];
+
+        p1[0] = radius * cos((angle1/180)*M_PI);
+        p1[1] = radius * sin((angle1/180)*M_PI);
+        p1[2] = zmin;
+        p1[3] = 1;
+
+        p2[0] = radius * cos((angle2/180)*M_PI);
+        p2[1] = radius * sin((angle2/180)*M_PI);
+        p2[2] = zmin;
+        p2[3] = 1;
+
+        p3[0] = radius * cos((angle2/180)*M_PI);
+        p3[1] = radius * sin((angle2/180)*M_PI);
+        p3[2] = zmax;
+        p3[3] = 1;
+
+        p4[0] = radius * cos((angle1/180)*M_PI);
+        p4[1] = radius * sin((angle1/180)*M_PI);
+        p4[2] = zmax;
+        p4[3] = 1;
+
+        line_pipeline(p1, false);
+        line_pipeline(p2, true);
+        line_pipeline(p3, true);
+        line_pipeline(p4, true);
+        //line_pipeline(p1, true);
+
     }
 
     return RD_OK;
@@ -1258,12 +1364,11 @@ int REDirect::rd_disk(float height, float radius, float theta)
 //
 int REDirect::rd_sphere(float radius, float zmin, float zmax, float thetamax)
 {
-
     // store indices where the 0, cos and sin occur
     int circles[3][3] = {{2,0,1},{0,1,2},{1,0,2}};
 
     for(int c=0;c<3;c++){
-            for (int i=0; i<NSEG; i++){
+            for (int i=0; i<=NSEG; i++){
                 float theta = (i / NSEG) * thetamax;
                 // get the point
                 float p[4];

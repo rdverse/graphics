@@ -35,7 +35,9 @@ std::array<std::array<double,4>,4> c2c;
 std::array<std::array<double,4>,4> c2d;
 
 //std::stack<std::array<std::array<double,4>,4>> xforms;
-
+// float* depthBuffer;
+//std::array<std::array<float,display_xSize>,display_ySize> depthBuffer;
+float* depthBuffer;
 // instead of stack use an array here
 
 //global vectors
@@ -134,14 +136,14 @@ void REDirect::calc_w2c_params(void){
 
 
 void REDirect::print_matrix(string stringp, std::array<std::array<double,4>,4> transform ){
-    std::cout<<std::endl<<stringp<<std::endl;
+  //  std::cout<<std::endl<<stringp<<std::endl;
     for(int i = 0; i<4;i++){
         for(int j = 0; j<4;j++){
             std::cout<<transform[i][j]<<" ";
         }
-        std::cout<<std::endl;
+   //     std::cout<<std::endl;
     }
-std::cout<<std::endl;
+//std::cout<<std::endl;
 
 }
 //////////////////////Transformation stack////////////////////////
@@ -237,11 +239,23 @@ int REDirect::rd_frame_begin(int frame_no)
 }
 
 int REDirect::rd_world_begin(void) {
+  // initialize depth buffer
+    depthBuffer = new float[display_ySize*display_xSize];
+
+    for( int i = 0; i < display_ySize; i++) {
+        for ( int j = 0; j < display_xSize; j++) {
+           // std::cout<<display_xSize*(j-1) +i<<" ";
+            *(depthBuffer + display_xSize*i + j) = 1;
+            //depthBuffer[i][j] = 1;
+
+        }
+   //     std::cout<<std::endl;
+    }
     //initialize display for new image, use below function
     // float testreturn[3] = {0,0,0};
     // check_write_pixel(10,10, testreturn);
     //rd_print_error(RD_OK, "s01.rd");
-
+//
     // Set the initial xform as an identity matrix
     for(unsigned int i = 0; i < 4; i++) {
         for (unsigned int j = 0; j < 4; j++) {
@@ -451,16 +465,18 @@ int REDirect::rd_xform_pop(void){
 
 /***********************************************************/
 
-void REDirect::check_write_pixel(int x, int y, int z = 0) {
+void REDirect::check_write_pixel(int x, int y, float z = 0) {
     // Check if pixel is within bounds
+    if(!((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize)))
+    {
+//    if(z < *(depthBuffer + display_xSize*(y-1)+x )){
+        if(z < *(depthBuffer + display_xSize*y + x)) {
 
-    //if(!((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize)))
-
-    //{
-    //if(z>depthBuffer[x][y]) {
-        rd_write_pixel(int(x), int(y), DrawColor);
-    //}
-        //}
+            rd_write_pixel(int(x), int(y), DrawColor);
+            //depthBuffer[y][x] = z;
+            *(depthBuffer + display_xSize*y + x) = z;
+        }
+        }
 }
 
 
@@ -473,11 +489,24 @@ int REDirect::rd_color(const float color[])
     return RD_OK;
 }
 
+int REDirect::rd_render_cleanup(void){
+ delete[] depthBuffer;
+    return(RD_OK);
+}
+
+
+/////////////?MEthods /////////////
+
  int REDirect::rd_point(const float p[3]){
 
     // Only have to write the pixel at the given co-ordinates
     // Takes a point, turns it into a homogeneous point and passes it to the point pipeline.
-    check_write_pixel(int(p[0]),int(p[1]));
+    float ph[4];
+    ph[0] = p[0];
+    ph[1] = p[1];
+     ph[2] = p[2];
+     ph[3] = 1;
+    point_pipeline(ph);
      return(RD_OK);
 }
 
@@ -533,39 +562,9 @@ void REDirect::line_pipeline(float lineH[], bool draw = false){
     float lineH3[4];
 
 
-  //  std::cout<<std::endl<<"initial start coordinates :"<<lineH[0]<<" "<<lineH[1]<<" "<<lineH[2]<<" "<<lineH[3]<<std::endl;
-
-    // step 1 : object to world transformation
-    multiply(lineH1, lineH, currentXform);
-    //print_matrix("object to world", currentXform);
-//    std::cout<<"after o2w start coordinates :"<<std::endl<<lineH1[0]<<" "<<lineH1[1]<<" "<<lineH1[2]<<" "<<lineH1[3]<<std::endl;
-
-
-    // step 2
-    //print_matrix("world to camera", w2c);
+    multiply(lineH1, lineH, currentXform); //o2w
     multiply(lineH2, lineH1, w2c);
- //   std::cout<<"after w2c start coordinates :"<<std::endl<<lineH2[0]<<" "<<lineH2[1]<<" "<<lineH2[2]<<" "<<lineH2[3]<<std::endl;
-
-    // step3
-    //print_matrix("camera to clip", c2c);
-
     multiply(lineH3, lineH2, c2c);
-    // std::cout<<"c2c start coordinates :"<<std::endl<<lineH3[0]<<" "<<lineH3[1]<<" "<<lineH3[2]<<" "<<lineH3[3]<<std::endl;
-
-
-    // Step 4) clip to device coordinates
-  //  multiply(startt3, startt2, c2d);
-
-
-//    std::array<std::array<double,4>,4> aftero2c;
-//    std::array<std::array<double,4>,4> afterw2c;
-//    std::array<std::array<double,4>,4> afterc2c;
-//    std::array<std::array<double,4>,4> afterc2d;
-
-
-//    multiply(afterc2c, afterw2c, c2c);
-//    multiply(afterc2d, afterc2c, c2d);
-
 
 
 if(draw){
@@ -668,7 +667,6 @@ void REDirect::draw_line(float lineHcurr[]){
 
     std::copy(&lineHcurr[0], &lineHcurr[0] + 4, &ptemp[0]);
 
-
     //convert clip to device coords here
     multiply(p1, lineHprev, c2d);
     multiply(p2, lineHcurr, c2d);
@@ -687,36 +685,47 @@ void REDirect::draw_line(float lineHcurr[]){
 
 
     // Read the coordinates of line start point
-    float x0 = p1[0];
-    float y0 = p1[1];
-    float z0 = p1[2];
+    float x1 = p1[0];
+    float y1 = p1[1];
+    float z1 = p1[2];
 
     // Read coordinates of line end point
-    int x1 = p2[0];
-    int y1 = p2[1];
-    float z1 = p2[2];
+    int x2 = p2[0];
+    int y2 = p2[1];
+    float z2 = p2[2];
 
 
-    // Calculate dx (start-end)x
-    float dx = x1 - x0;
-    float dy = y1 - y0;
-    float dz = z1 - z0;
+    // Calculate dx (end-start)x
+    float dx = x2-x1;
+    float dy = y2-y1;
+    float dz = z2-z1;
 
     int NSTEPS;
 
-    abs(dx)>abs(dy) ? NSTEPS=abs(dx) : NSTEPS=abs(dy);
+    if(abs(dx)>abs(dy)) {
+        NSTEPS = abs(dx);
+    }
+     else{
+         NSTEPS = abs(dy);
+     }
 
-    int x = x0;
-    int y = y0;
-    int z = z0;
-    dx = dx/ NSTEPS;
+    float x = x1;
+    float y = y1;
+    float z = z1;
+
+    dx = dx/NSTEPS;
     dy = dy/NSTEPS;
     dz = dz/NSTEPS;
+
+   // std::cout<<abs(dx)<<" "<<dx<<" "<<abs(dy)<<" "<<dy<<" ";
+
+    //  std::cout<<z0<<" "<<z1<<std::endl;
     check_write_pixel(int(x), int(y), z);
     for(int i=0;i<NSTEPS;i++){
         x = x + dx;
         y = y + dy;
         z = z + dz;
+       // std::cout<<dx<<" ";
         check_write_pixel(int(x), int(y), z);
     }
 }
@@ -1016,32 +1025,18 @@ void REDirect::point_pipeline(float pH[]){
     float pH3[4];
     float pH4[4];
 
-//    std::cout<<std::endl<<"initial start coordinates :"<<pH[0]<<" "<<pH[1]<<" "<<pH[2]<<" "<<pH[3]<<std::endl;
-
     // step 1 : object to world transformation
     multiply(pH1, pH, currentXform);
-  //  print_matrix("object to world", currentXform);
- //   std::cout<<"after o2w start coordinates :"<<std::endl<<pH1[0]<<" "<<pH1[1]<<" "<<pH1[2]<<" "<<pH1[3]<<std::endl;
 
+    std::cout<<pH1[0]<<" "<<pH1[1]<<" "<<pH1[2]<<" "<<pH1[3]<<std::endl;
 
-    // step 2
-  //
-  //
-  //  print_matrix("world to camera", w2c);
     multiply(pH2, pH1, w2c);
-//    std::cout<<"after w2c start coordinates :"<<std::endl<<pH2[0]<<" "<<pH2[1]<<" "<<pH2[2]<<" "<<pH2[3]<<std::endl;
 
-    // step3
-   // print_matrix("camera to clip", c2c);
+    std::cout<<pH2[0]<<" "<<pH2[1]<<" "<<pH2[2]<<" "<<pH2[3]<<std::endl;
 
     multiply(pH3, pH2, c2c);
-    // std::cout<<"c2c start coordinates :"<<std::endl<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
 
-  //  print_matrix("clip to device", c2d);
-
- //   std::cout<<"after c2c  :"<<std::endl<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
-
-
+    std::cout<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
     //convert clip to device coords here
     multiply(pH4, pH3, c2d);
 
@@ -1049,10 +1044,11 @@ void REDirect::point_pipeline(float pH[]){
     pH4[1] = pH4[1]/pH4[3];
     pH4[2] = pH4[2]/pH4[3];
     pH4[3] = pH4[3]/pH4[3];
-//    std::cout<<"after c2d  :"<<std::endl<<pH4[0]<<" "<<pH4[1]<<" "<<pH4[2]<<" "<<pH4[3]<<std::endl;
 
+    std::cout<<pH4[0]<<" "<<pH4[1]<<" "<<pH4[2]<<" "<<pH4[3]<<std::endl;
 
-    rd_write_pixel(int(pH4[0]), int(pH4[1]), DrawColor);
+    //rd_write_pixel(int(pH4[0]), int(pH4[1]), DrawColor);
+    check_write_pixel(int(pH4[0]), int(pH4[1]), pH[2]);
 }
 
 
@@ -1091,7 +1087,7 @@ int faceTraversed=0;
 
     while(true){
         // for each face, draw all points
-        std::cout<<currVertex<<" ";
+       // std::cout<<currVertex<<" ";
         float p[4];
 
         if(faceTraversed==nface){
@@ -1253,7 +1249,6 @@ int REDirect::rd_cube(void)
 
             // get the point
             float p[4];
-            //std::copy(&cpoints[faces[i][j]], &cpoints[faces[i][j]] + 3, &p1[0]);
             p[0] = cpoints[faces[i][j]][0];
             p[1] = cpoints[faces[i][j]][1];
             p[2] = cpoints[faces[i][j]][2];
@@ -1261,41 +1256,16 @@ int REDirect::rd_cube(void)
 
             if(j==0) {
               //move only
-              //std::cout<<faces[i][j]<<" ";
-              //  std::cout<<cpoints[faces[i][j]][0]<<" "<<cpoints[faces[i][j]][1]<<" "<<cpoints[faces[i][j]][2]<<std::endl;
-
                 line_pipeline(p, false);
-                //  std::copy(&cpoints[faces[i][j+1]], &cpoints[faces[i][j+1]] + 3, &p2[0]);
             }
             else{
 
-//                std::cout<<faces[i][j]<<" ";
-                //std::cout<<cpoints[faces[i][j]][0]<<" "<<cpoints[faces[i][j]][1]<<" "<<cpoints[faces[i][j]][2]<<std::endl;
-
                 line_pipeline(p,true);
                 // move and draw
-                //std::copy(&cpoints[faces[i][0]], &cpoints[faces[i][0]] + 3, &p2[0]);
             }
         }
-       // break;
-
     }
-//
-//    float a[3] = {0,0,0};
-//    float b[3] = {1,0,0};
-//    rd_line(a,b);
-//
-//    float a1[3] = {0,1,0};
-//    float b1[3] = {2,1,0};
-//    rd_line(a1,b1);
-////
-////    float a[3] = {0,1,0};
-////    float b[3] = {1,0,0};
-////    rd_line(a,b);
-
     return RD_OK;
-
-
 }
 
 int REDirect::rd_cylinder(float radius, float zmin,

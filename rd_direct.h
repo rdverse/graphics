@@ -29,12 +29,12 @@ int rd_frame_begin(int frame_no);
 int rd_frame_end(void);
 
 // int rd_render_init(void);  /* Initialize renderer */
-//
-// int rd_render_cleanup(void);
+
+ int rd_render_cleanup(void);
 
  int rd_color(const float color[]);
 
-void check_write_pixel(int x, int y, int z);
+void check_write_pixel(int x, int y, float z);
 
 void print_matrix(string stringp, std::array<std::array<double,4>,4> transform );
 

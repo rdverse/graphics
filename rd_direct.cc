@@ -451,13 +451,16 @@ int REDirect::rd_xform_pop(void){
 
 /***********************************************************/
 
-void REDirect::check_write_pixel(int x, int y) {
+void REDirect::check_write_pixel(int x, int y, int z = 0) {
     // Check if pixel is within bounds
-    if(!((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize)))
-    {
 
+    //if(!((x<0)||(x>=display_xSize)||(y<0)||(y>=display_ySize)))
+
+    //{
+    //if(z>depthBuffer[x][y]) {
         rd_write_pixel(int(x), int(y), DrawColor);
-    }
+    //}
+        //}
 }
 
 
@@ -575,31 +578,96 @@ else{
 }
 
 
+//void REDirect::draw_line(float lineHcurr[]){
+//
+//    float p1[4];
+//    float p2[4];
+//    float ptemp[4];
+//
+//    std::copy(&lineHcurr[0], &lineHcurr[0] + 4, &ptemp[0]);
+//
+//
+////    lineHprev[0] = lineHprev[0]/lineHprev[3];
+////    lineHprev[1] = lineHprev[1]/lineHprev[3];
+////    lineHprev[2] = lineHprev[2]/lineHprev[3];
+////    lineHprev[3] = lineHprev[3]/lineHprev[3];
+////
+////
+////    lineHcurr[0] = lineHcurr[0]/lineHcurr[3];
+////    lineHcurr[1] = lineHcurr[1]/lineHcurr[3];
+////    lineHcurr[2] = lineHcurr[2]/lineHcurr[3];
+////    lineHcurr[3] = lineHcurr[3]/lineHcurr[3];
+//
+//    //convert clip to device coords here
+//    multiply(p1, lineHprev, c2d);
+//    multiply(p2, lineHcurr, c2d);
+//
+//    std::copy(&ptemp[0], &ptemp[0] + 4, &lineHprev[0]);
+//
+////    std::cout<<"after c2d start coordinates :"<<std::endl<<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<" "<<p1[3]<<std::endl;
+////    std::cout<<"after c2d end coordinates :"<<std::endl<<p2[0]<<" "<<p2[1]<<" "<<p2[2]<<" "<<p2[3]<<std::endl;
+//
+////
+//    p1[0] = p1[0]/p1[3];
+//    p1[1] = p1[1]/p1[3];
+//    p1[2] = p1[2]/p1[3];
+//    p1[3] = p1[3]/p1[3];
+//
+//    p2[0] = p2[0]/p2[3];
+//    p2[1] = p2[1]/p2[3];
+//    p2[2] = p2[2]/p2[3];
+//    p2[3] = p2[3]/p2[3];
+// //   std::cout<<"after c2d start coordinates :"<<std::endl<<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<std::endl;
+////    std::cout<<"after c2d end coordinates :"<<std::endl<<p2[0]<<" "<<p2[1]<<" "<<p2[2]<<std::endl;
+//
+//    // Read the coordinates of line start point
+//    float x0 = p1[0];
+//    float y0 = p1[1];
+//
+//    // Read coordinates of line end point
+//    float x1 = p2[0];
+//    float y1 = p2[1];
+//
+// //   std::cout<<"start coordinates :"<<p1[0]<<" "<<p1[1]<<" "<<p1[2];
+////    std::cout<<"end coordinates :"<<p2[0]<<" "<<p2[1]<<" "<<p2[2];
+//        // Calculate dx (start-end)x
+//        float dx = x1 - x0;
+//        float dy = y1 - y0;
+//
+//        //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
+//
+//        // More horizontal (dx>dy)
+//        if (abs(dy)<=abs(dx)){
+//            //      std::cout<<"dy<dx";
+//            if (dx < 0) {
+//                swap(x0, x1);
+//                swap(y0, y1);
+//            }
+//            line_more_horizontal(x0, y0, x1, y1);
+//        }
+//            //more vertical (dy>dx)
+//        else {
+//            // if dy<0, swap end points (by reference)
+//            if (dy < 0) {
+//                //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+//                swap(x0, x1);
+//                swap(y0, y1);
+//                //       std::cout<<"swap complete";
+//            }
+////        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
+//            line_more_vertical(x0, y0, x1, y1);
+//        }
+//
+//}
+
 void REDirect::draw_line(float lineHcurr[]){
 
     float p1[4];
     float p2[4];
     float ptemp[4];
 
-   // print_matrix("clip to device", c2d);
-
-//    std::cout<<"c2c start coordinates :"<<std::endl<<lineHprev[0]<<" "<<lineHprev[1]<<" "<<lineHprev[2]<<" "<<lineHprev[3]<<std::endl;
- //   std::cout<<"c2c start coordinates :"<<std::endl<<lineHcurr[0]<<" "<<lineHcurr[1]<<" "<<lineHcurr[2]<<" "<<lineHcurr[3]<<std::endl;
-
-
     std::copy(&lineHcurr[0], &lineHcurr[0] + 4, &ptemp[0]);
 
-
-//    lineHprev[0] = lineHprev[0]/lineHprev[3];
-//    lineHprev[1] = lineHprev[1]/lineHprev[3];
-//    lineHprev[2] = lineHprev[2]/lineHprev[3];
-//    lineHprev[3] = lineHprev[3]/lineHprev[3];
-//
-//
-//    lineHcurr[0] = lineHcurr[0]/lineHcurr[3];
-//    lineHcurr[1] = lineHcurr[1]/lineHcurr[3];
-//    lineHcurr[2] = lineHcurr[2]/lineHcurr[3];
-//    lineHcurr[3] = lineHcurr[3]/lineHcurr[3];
 
     //convert clip to device coords here
     multiply(p1, lineHprev, c2d);
@@ -607,10 +675,6 @@ void REDirect::draw_line(float lineHcurr[]){
 
     std::copy(&ptemp[0], &ptemp[0] + 4, &lineHprev[0]);
 
-//    std::cout<<"after c2d start coordinates :"<<std::endl<<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<" "<<p1[3]<<std::endl;
-//    std::cout<<"after c2d end coordinates :"<<std::endl<<p2[0]<<" "<<p2[1]<<" "<<p2[2]<<" "<<p2[3]<<std::endl;
-
-//
     p1[0] = p1[0]/p1[3];
     p1[1] = p1[1]/p1[3];
     p1[2] = p1[2]/p1[3];
@@ -620,50 +684,42 @@ void REDirect::draw_line(float lineHcurr[]){
     p2[1] = p2[1]/p2[3];
     p2[2] = p2[2]/p2[3];
     p2[3] = p2[3]/p2[3];
- //   std::cout<<"after c2d start coordinates :"<<std::endl<<p1[0]<<" "<<p1[1]<<" "<<p1[2]<<std::endl;
-//    std::cout<<"after c2d end coordinates :"<<std::endl<<p2[0]<<" "<<p2[1]<<" "<<p2[2]<<std::endl;
+
 
     // Read the coordinates of line start point
     float x0 = p1[0];
     float y0 = p1[1];
+    float z0 = p1[2];
 
     // Read coordinates of line end point
-    float x1 = p2[0];
-    float y1 = p2[1];
+    int x1 = p2[0];
+    int y1 = p2[1];
+    float z1 = p2[2];
 
- //   std::cout<<"start coordinates :"<<p1[0]<<" "<<p1[1]<<" "<<p1[2];
-//    std::cout<<"end coordinates :"<<p2[0]<<" "<<p2[1]<<" "<<p2[2];
-        // Calculate dx (start-end)x
-        float dx = x1 - x0;
-        float dy = y1 - y0;
 
-        //  std::cout<<"dy :"<<dy<<" dx: "<<dx;
+    // Calculate dx (start-end)x
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float dz = z1 - z0;
 
-        // More horizontal (dx>dy)
-        if (abs(dy)<=abs(dx)){
-            //      std::cout<<"dy<dx";
-            if (dx < 0) {
-                swap(x0, x1);
-                swap(y0, y1);
-            }
-            line_more_horizontal(x0, y0, x1, y1);
-        }
-            //more vertical (dy>dx)
-        else {
-            // if dy<0, swap end points (by reference)
-            if (dy < 0) {
-                //     std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
-                swap(x0, x1);
-                swap(y0, y1);
-                //       std::cout<<"swap complete";
-            }
-//        std::cout<<std::endl<<"y0: "<<y0<<" y1: "<<y1;
-            line_more_vertical(x0, y0, x1, y1);
-        }
+    int NSTEPS;
 
+    abs(dx)>abs(dy) ? NSTEPS=abs(dx) : NSTEPS=abs(dy);
+
+    int x = x0;
+    int y = y0;
+    int z = z0;
+    dx = dx/ NSTEPS;
+    dy = dy/NSTEPS;
+    dz = dz/NSTEPS;
+    check_write_pixel(int(x), int(y), z);
+    for(int i=0;i<NSTEPS;i++){
+        x = x + dx;
+        y = y + dy;
+        z = z + dz;
+        check_write_pixel(int(x), int(y), z);
+    }
 }
-
-
 
 void REDirect::line_more_horizontal(float xs, float ys, float xe, float ye)
 {

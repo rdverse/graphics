@@ -34,7 +34,7 @@ int rd_frame_end(void);
 
  int rd_color(const float color[]);
 
-void check_write_pixel(int x, int y);
+void check_write_pixel(int x, int y, int z);
 
 void print_matrix(string stringp, std::array<std::array<double,4>,4> transform );
 

@@ -2,7 +2,7 @@
 #define RD_ENGINE_DIRECT_H
 
 #include "rd_enginebase.h"
-
+#include<array>
 #include <string>
 using std::string;
 
@@ -36,44 +36,68 @@ int rd_frame_end(void);
 
 void check_write_pixel(int x, int y);
 
+void print_matrix(string stringp, std::array<std::array<double,4>,4> transform );
 
     int rd_point(const float p[3]);
 
  int rd_background(const float color[]);
 
- int rd_line(const float start[3], const float end[3]);
-     int rd_circle(const float center[3], float radius);
 
- void circle_plot_points(int x, int y, int xp, int yp);
-     int rd_fill(const float seed_point[3]);
-
- void fill_helper(int x, int y);
-bool boundary_check(int x, int y);
-    void swap_points(float &p1, float &p2);
-
-void line_more_horizontal(float xs, float ys, float xe, float ye);
+ /////////Line//////////////////////
+    int rd_line(const float start[3], const float end[3]);
+    //void line_pipeline(float starth[], float endh[], bool draw);
+    void line_pipeline(float lineH[], bool draw);
+    void draw_line(float lineHcurr[]);
+    void line_more_horizontal(float xs, float ys, float xe, float ye);
     void line_more_vertical(float xs, float ys, float xe, float ye);
+
+
+     int rd_circle(const float center[3], float radius);
+     void circle_plot_points(int x, int y, int xp, int yp);
+
+     int rd_fill(const float seed_point[3]);
+     void fill_helper(int x, int y);
+     bool boundary_check(int x, int y);
+     void swap_points(float &p1, float &p2);
+
+
+    /************ Transformation stack helpers **********/
+    void pointh( float homo[], const float cartesian[3]);
+    void multiply(std::array<std::array<double,4>,4> &mul, std::array<std::array<double,4>,4> m1, std::array<std::array<double,4>,4> m2);
+
+    void multiply(float transp[], float pointHomo[], std::array<std::array<double,4>,4> transform);
+
+        void crossProduct(float A[], float B[], float C[]);
+    void normalize_vector(float vect[]);
+
+    void calc_w2c_params(void);
+    void world_to_camera(void);
+    void camera_to_clip(void);
+        void clip_to_device(void);
+
+        /**********************   Camera  ******************************************/
+
+     int rd_camera_eye(const float eyepoint[3]);
+     int rd_camera_at(const float atpoint[3]);
+     int rd_camera_up(const float up[3]);
+     int rd_camera_fov(float fov);
+     int rd_clipping(float znear, float zfar);
+
+    /**********************   Transformations **********************************/
+
+     int rd_translate(const float offset[3]);
+     int rd_scale(const float scale_factor[3]);
+     int rd_rotate_xy(float angle);
+     int rd_rotate_yz(float angle);
+     int rd_rotate_zx(float angle);
+     int rd_matrix(const float * mat);
+
+     int rd_xform_push(void);
+     int rd_xform_pop(void);
 
     //
 //
-//    /**********************   Camera  ******************************************/
-////
-//     int rd_camera_eye(const float eyepoint[3]);
-//     int rd_camera_at(const float atpoint[3]);
-//     int rd_camera_up(const float up[3]);
-//    int rd_camera_fov(float fov);
-//     int rd_clipping(float znear, float zfar);
-//    //  /**********************   Transformations **********************************/
-////
-//     int rd_translate(const float offset[3]);
-//     int rd_scale(const float scale_factor[3]);
-//     int rd_rotate_xy(float angle);
-//     int rd_rotate_yz(float angle);
-//     int rd_rotate_zx(float angle);
-//     int rd_matrix(const float * mat);
-//
-//     int rd_xform_push(void);
-//     int rd_xform_pop(void);
+
 ////
 ////  /**********************   Geometric Objects  *******************************/
 ////
@@ -97,24 +121,25 @@ void line_more_horizontal(float xs, float ys, float xe, float ye);
 //                           int nseg, const int * seg);
 //
 //
-//     int rd_pointset(const string & vertex_type,
-//                            int nvertex, const float * vertex);
-//     int rd_polyset(const string & vertex_type,
-//                           int nvertex, const float * vertex,
-//                           int nface,   const int * face);
-//
-//     int rd_cone(float height, float radius, float thetamax);
-//     int rd_cube(void);
-//     int rd_cylinder(float radius, float zmin,
-//                            float zmax, float thetamax);
-//     int rd_disk(float height, float radius, float theta);
+    void point_pipeline(float pH[]);
+     int rd_pointset(const string & vertex_type,
+                            int nvertex, const float * vertex);
+     int rd_polyset(const string & vertex_type,
+                           int nvertex, const float * vertex,
+                           int nface,   const int * face);
+
+     int rd_cone(float height, float radius, float thetamax);
+     int rd_cube(void);
+     int rd_cylinder(float radius, float zmin,
+                            float zmax, float thetamax);
+     int rd_disk(float height, float radius, float theta);
 //
 //     int rd_hyperboloid(const float start[3], const float end[3],
 //                               float thetamax);
 //
 //     int rd_paraboloid(float rmax, float zmin,
 //                              float zmax, float thetamax);
-//     int rd_sphere(float radius, float zmin, float zmax, float thetamax);
+     int rd_sphere(float radius, float zmin, float zmax, float thetamax);
 //     int rd_sqsphere(float radius, float north, float east,
 //                            float zmin, float zmax, float thetamax);
 //     int rd_sqtorus(float radius1, float radius2,

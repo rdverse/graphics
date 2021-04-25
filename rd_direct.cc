@@ -55,7 +55,7 @@ float V[3];
 float A[3];
 
 //for approximated stuff
-float NSEG = 54;
+float NSEG = 18;
 ////////////////////Transformation stack help////////////////
 
 void REDirect::pointh(float homo[], const float cartesian[3]){
@@ -1391,33 +1391,61 @@ int REDirect::rd_disk(float height, float radius, float theta)
 int REDirect::rd_sphere(float radius, float zmin, float zmax, float thetamax)
 {
     // store indices where the 0, cos and sin occur
-    int circles[3][3] = {{2,0,1},{0,1,2},{1,0,2}};
+//    int circles[3][3] = {{2,0,1},{0,1,2},{1,0,2}};
+//
+//    for(int c=0;c<3;c++){
+//            for (int i=0; i<=NSEG; i++){
+//                float theta = (i / NSEG) * thetamax;
+//                // get the point
+//                float p[4];
+//                //std::copy(&cpoints[faces[i][j]], &cpoints[faces[i][j]] + 3, &p1[0]);
+//                // first position in circle array is 0
+//                p[circles[c][0]] = 0;
+//                // second position in circle array is cos
+//                p[circles[c][1]] = -radius * cos((theta/180)*M_PI);
+//                // third position in circle array is sin
+//                p[circles[c][2]] = -radius * sin((theta/180)*M_PI);
+//                p[3] =1;
+//                if (i == 0) {
+//                    //move only
+//                    line_pipeline(p, false);
+//                    //  std::copy(&cpoints[faces[i][j+1]], &cpoints[faces[i][j+1]] + 3, &p2[0]);
+//                } else {
+//                    line_pipeline(p, true);
+//                    // move and draw
+//                    //std::copy(&cpoints[faces[i][0]], &cpoints[faces[i][0]] + 3, &p2[0]);
+//                }
+//            }
+//    }
+float NSEG=20;
+for(int latlon=0;latlon<2;latlon++) {
+    for (int i = 0; i <= NSEG; i++) {
+        float theta = i * 2 * (M_PI) / NSEG;
+        for (int j = 0; j <= NSEG; j++) {
+            float phi = j * (M_PI) / NSEG;
 
-    for(int c=0;c<3;c++){
-            for (int i=0; i<=NSEG; i++){
-                float theta = (i / NSEG) * thetamax;
-                // get the point
-                float p[4];
-                //std::copy(&cpoints[faces[i][j]], &cpoints[faces[i][j]] + 3, &p1[0]);
-                // first position in circle array is 0
-                p[circles[c][0]] = 0;
-                // second position in circle array is cos
-                p[circles[c][1]] = -radius * cos((theta/180)*M_PI);
-                // third position in circle array is sin
-                p[circles[c][2]] = -radius * sin((theta/180)*M_PI);
-                p[3] =1;
-                if (i == 0) {
-                    //move only
-                    line_pipeline(p, false);
-                    //  std::copy(&cpoints[faces[i][j+1]], &cpoints[faces[i][j+1]] + 3, &p2[0]);
-                } else {
-                    line_pipeline(p, true);
-                    // move and draw
-                    //std::copy(&cpoints[faces[i][0]], &cpoints[faces[i][0]] + 3, &p2[0]);
-                }
+            // longitude specs
+            float x = -radius * sin(phi) * cos(theta);
+            float y = -radius * sin(phi) * sin(theta);
+            float z = radius * cos(phi);
+
+            // latitude mode
+            if(latlon==0){
+                float temp = z;
+                z=x;
+                x=temp;
             }
-    }
+                float p[4] = {x, y, z, 1};
 
+            if (j == 0) {
+                //move only
+                line_pipeline(p, false);
+            } else {
+                line_pipeline(p, true);
+            }
+        }
+    }
+}
     return RD_OK;
 }
 //

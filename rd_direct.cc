@@ -55,7 +55,7 @@ float V[3];
 float A[3];
 
 //for approximated stuff
-float NSEG = 18;
+float NSEG = 21;
 ////////////////////Transformation stack help////////////////
 
 void REDirect::pointh(float homo[], const float cartesian[3]){
@@ -130,8 +130,6 @@ void REDirect::calc_w2c_params(void){
  //   std::cout<<std::endl<<"V : "<<V[0]<<" "<<V[1]<<" "<<V[2]<<std::endl;
  //   std::cout<<std::endl<<"U : "<<U[0]<<" "<<U[1]<<" "<<U[2]<<std::endl;
  //   std::cout<<std::endl<<"A : "<<A[0]<<" "<<A[1]<<" "<<A[2]<<std::endl;
-
-
 }
 
 
@@ -1417,25 +1415,20 @@ int REDirect::rd_sphere(float radius, float zmin, float zmax, float thetamax)
 //                }
 //            }
 //    }
-float NSEG=20;
-for(int latlon=0;latlon<2;latlon++) {
+
+// Draw longitudes
     for (int i = 0; i <= NSEG; i++) {
         float theta = i * 2 * (M_PI) / NSEG;
+        // draw resolution
         for (int j = 0; j <= NSEG; j++) {
             float phi = j * (M_PI) / NSEG;
 
             // longitude specs
-            float x = -radius * sin(phi) * cos(theta);
-            float y = -radius * sin(phi) * sin(theta);
+            float x = radius * sin(phi) * cos(theta);
+            float y = radius * sin(phi) * sin(theta);
             float z = radius * cos(phi);
 
-            // latitude mode
-            if(latlon==0){
-                float temp = z;
-                z=x;
-                x=temp;
-            }
-                float p[4] = {x, y, z, 1};
+            float p[4] = {x, y, z, 1};
 
             if (j == 0) {
                 //move only
@@ -1445,7 +1438,30 @@ for(int latlon=0;latlon<2;latlon++) {
             }
         }
     }
-}
+
+// Draw latitudes
+    for(int j = 0; j <= NSEG; j++) {
+        float phi = j * (M_PI) / NSEG;
+        // draw resolution
+        for(int i = 0; i <= NSEG; i++) {
+            float theta = i * 2 * (M_PI) / NSEG;
+            // longitude specs
+            float x = radius * sin(phi) * cos(theta);
+            float y = radius * sin(phi) * sin(theta);
+            float z = radius * cos(phi);
+
+            float p[4] = {x, y, z, 1};
+
+            if (j == 0) {
+                //move only
+                line_pipeline(p, false);
+            } else {
+                line_pipeline(p, true);
+            }
+        }
+    }
+
+
     return RD_OK;
 }
 //

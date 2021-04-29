@@ -47,7 +47,9 @@ void print_matrix(string stringp, std::array<std::array<double,4>,4> transform )
     int rd_line(const float start[3], const float end[3]);
     //void line_pipeline(float starth[], float endh[], bool draw);
     void line_pipeline(float lineH[], bool draw);
-    void draw_line(float lineHcurr[]);
+    void line_b_coord_kode(float Bcoord[], int Bkode[], float lineH[]);
+        void line_clipping();
+    void draw_line();
     void line_more_horizontal(float xs, float ys, float xe, float ye);
     void line_more_vertical(float xs, float ys, float xe, float ye);
 
@@ -67,7 +69,7 @@ void print_matrix(string stringp, std::array<std::array<double,4>,4> transform )
 
     void multiply(float transp[], float pointHomo[], std::array<std::array<double,4>,4> transform);
 
-        void crossProduct(float A[], float B[], float C[]);
+        void crossProduct(float C[], float A[], float B[]);
     void normalize_vector(float vect[]);
 
     void calc_w2c_params(void);

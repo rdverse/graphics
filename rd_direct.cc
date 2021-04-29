@@ -21,6 +21,7 @@ float BackgroundColor[] = {0.0 ,  0.0 , 0.0};
 
 //global line points
 float lineHprev[4];
+float lineHcurr[4];
 
 // Global xforms
 std::array<std::array<double,4>,4> currentXform;
@@ -564,16 +565,132 @@ void REDirect::line_pipeline(float lineH[], bool draw = false){
     multiply(lineH2, lineH1, w2c);
     multiply(lineH3, lineH2, c2c);
 
-
 if(draw){
-    draw_line(lineH3);
 
+    std::copy(&lineH3[0], &lineH3[0] + 4, &lineHcurr[0]);
+    // line clipping routine here
+    line_clipping();
+
+    // make LineHcurr global
+
+    //draw line now. The line should be clipped by now.
 }
+
 else{
     std::copy(&lineH3[0], &lineH3[0] + 4, &lineHprev[0]);
 }
+
 }
 
+
+//function to calculate boundary coordinates and boundary kodes
+void REDirect::line_b_coord_kode(float Bcoord[], int Bkode[], float lineH[]){
+
+    Bcoord[0] = lineH[0];
+    Bcoord[1] = lineH[0] - lineH[3];
+
+    Bcoord[2] = lineH[1];
+    Bcoord[3] = lineH[1] - lineH[3];
+
+    Bcoord[4] = lineH[2];
+    Bcoord[5] = lineH[2] - lineH[3];
+
+    for(int i=5;i<0;i++){
+        //case negative
+        if(Bcoord<0){
+            Bkode[5-i] = 1;
+        }
+            //case positive
+        else{
+            Bkode[5-i] = 0;
+        }
+    }
+}
+
+void REDirect::line_clipping(){
+
+// clip coordinates are stored globally
+
+// This function takes the current and previous coordinates and clips the line
+
+float BcoordCurr[6];
+float BcoordPrev[6];
+
+int kodeCurr[6];
+int kodePrev[6];
+
+//std::cout<<std::endl<<std::endl<<std::endl;
+//std::cout<<std::endl<<"Testing the initial coordinates"<<std::endl;
+
+//std::cout<<lineHcurr[0]<<" "<<lineHcurr[1]<<lineHcurr[2]<<" "<<lineHcurr[3]<<std::endl;
+
+line_b_coord_kode(BcoordCurr, kodeCurr, lineHcurr);
+line_b_coord_kode(BcoordPrev, kodePrev, lineHprev);
+
+//std::cout<<BcoordCurr[0]<<" "<<BcoordCurr[1]<<BcoordCurr[2]<<" "<<BcoordCurr[3]<<std::endl;
+//std::cout<<std::endl<<std::endl<<std::endl;
+
+std::stack<int> kodes;
+
+// to store if it is a in to out or out to in
+std::stack<int> kodeType;
+
+bool draw = true;
+std::cout<<"We are in the clipping funtion ";
+for(int i = 0; i<5;i++) {
+    int k1 = kodePrev[i];
+    int k2 = kodeCurr[i];
+
+    // if both 1's reject the line as a whole
+
+    // if any one is one and the other zero push to kodecheck and
+    // more conditions here if it is in to out or out to in
+
+    // if both zeros, this point is trivial accepts
+
+    int a = 1;
+    int b = 1;
+    bool c = a &b;
+    int d = a&b;
+if(d){
+    std::cout<<"c :"<<c<<" d : "<<d;
+
+}
+
+    if (k1 & k2) {
+        std::cout<<" "<<k1<<" and "<<k1;
+        draw=false;
+        break;
+        //trivial reject
+    } else {
+        if (k1 | k2) {
+            kodes.push(i);
+            if(k1==1) {
+                // out to in
+                kodeType.push(1);
+            } else{
+                kodeType.push(2);
+                //in to out
+            }
+
+        } else{
+            // accept
+            continue;
+        }
+    }
+   }
+
+std::cout<<" draw is "<<draw;
+    if (draw) {
+        draw_line();
+    }
+
+float amin;
+float amax;
+float alpha;
+
+// calculate
+}
 
 //void REDirect::draw_line(float lineHcurr[]){
 //
@@ -657,7 +774,7 @@ else{
 //
 //}
 
-void REDirect::draw_line(float lineHcurr[]){
+void REDirect::draw_line(){
 
     float p1[4];
     float p2[4];
@@ -1026,15 +1143,15 @@ void REDirect::point_pipeline(float pH[]){
     // step 1 : object to world transformation
     multiply(pH1, pH, currentXform);
 
-    std::cout<<pH1[0]<<" "<<pH1[1]<<" "<<pH1[2]<<" "<<pH1[3]<<std::endl;
+   // std::cout<<pH1[0]<<" "<<pH1[1]<<" "<<pH1[2]<<" "<<pH1[3]<<std::endl;
 
     multiply(pH2, pH1, w2c);
 
-    std::cout<<pH2[0]<<" "<<pH2[1]<<" "<<pH2[2]<<" "<<pH2[3]<<std::endl;
+   // std::cout<<pH2[0]<<" "<<pH2[1]<<" "<<pH2[2]<<" "<<pH2[3]<<std::endl;
 
     multiply(pH3, pH2, c2c);
 
-    std::cout<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
+   // std::cout<<pH3[0]<<" "<<pH3[1]<<" "<<pH3[2]<<" "<<pH3[3]<<std::endl;
     //convert clip to device coords here
     multiply(pH4, pH3, c2d);
 
@@ -1043,7 +1160,7 @@ void REDirect::point_pipeline(float pH[]){
     pH4[2] = pH4[2]/pH4[3];
     pH4[3] = pH4[3]/pH4[3];
 
-    std::cout<<pH4[0]<<" "<<pH4[1]<<" "<<pH4[2]<<" "<<pH4[3]<<std::endl;
+ //   std::cout<<pH4[0]<<" "<<pH4[1]<<" "<<pH4[2]<<" "<<pH4[3]<<std::endl;
 
     //rd_write_pixel(int(pH4[0]), int(pH4[1]), DrawColor);
     check_write_pixel(int(pH4[0]), int(pH4[1]), pH[2]);

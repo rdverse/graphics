@@ -595,14 +595,15 @@ void REDirect::line_b_coord_kode(float Bcoord[], int Bkode[], float lineH[]){
     Bcoord[4] = lineH[2];
     Bcoord[5] = lineH[2] - lineH[3];
 
-    for(int i=5;i<0;i++){
+    for(int i=5;i>=0;i--){
         //case negative
-        if(Bcoord<0){
-            Bkode[5-i] = 1;
+        //std::cout<<Bcoord[i]<<std::endl;
+        if(Bcoord[i]<0){
+            Bkode[i] = 1;
         }
             //case positive
         else{
-            Bkode[5-i] = 0;
+            Bkode[i] = 0;
         }
     }
 }
@@ -619,77 +620,88 @@ float BcoordPrev[6];
 int kodeCurr[6];
 int kodePrev[6];
 
-//std::cout<<std::endl<<std::endl<<std::endl;
-//std::cout<<std::endl<<"Testing the initial coordinates"<<std::endl;
 
-//std::cout<<lineHcurr[0]<<" "<<lineHcurr[1]<<lineHcurr[2]<<" "<<lineHcurr[3]<<std::endl;
+    line_b_coord_kode(BcoordCurr, kodeCurr, lineHcurr);
+    line_b_coord_kode(BcoordPrev, kodePrev, lineHprev);
 
-line_b_coord_kode(BcoordCurr, kodeCurr, lineHcurr);
-line_b_coord_kode(BcoordPrev, kodePrev, lineHprev);
+std::cout<<std::endl<<std::endl<<std::endl;
+std::cout<<std::endl<<"Testing the initial coordinates"<<std::endl;
 
-//std::cout<<BcoordCurr[0]<<" "<<BcoordCurr[1]<<BcoordCurr[2]<<" "<<BcoordCurr[3]<<std::endl;
-//std::cout<<std::endl<<std::endl<<std::endl;
+std::cout<<lineHcurr[0]<<" "<<lineHcurr[1]<<lineHcurr[2]<<" "<<lineHcurr[3]<<std::endl;
+std::cout<<BcoordCurr[0]<<" "<<BcoordCurr[1]<<" "<<BcoordCurr[2]<<" "<<BcoordCurr[3]<<" "<<BcoordCurr[4]<<" "<<BcoordCurr[5]<<std::endl;
+
+std::cout<<kodePrev[0]<<" "<<kodePrev[1]<<" "<<kodePrev[2]<<" "<<kodePrev[3]<<" "<<kodePrev[4]<<" "<<kodePrev[5]<<std::endl;
+std::cout<<kodeCurr[0]<<" "<<kodeCurr[1]<<" "<<kodeCurr[2]<<" "<<kodeCurr[3]<<" "<<kodeCurr[4]<<" "<<kodeCurr[5]<<std::endl;
+std::cout<<std::endl<<std::endl<<std::endl;
+
 
 std::stack<int> kodes;
 
 // to store if it is a in to out or out to in
 std::stack<int> kodeType;
 
-bool draw = true;
-std::cout<<"We are in the clipping funtion ";
+bool make = true;
+
 for(int i = 0; i<5;i++) {
-    int k1 = kodePrev[i];
-    int k2 = kodeCurr[i];
+    int k0 = kodePrev[i];
+    int k1 = kodeCurr[i];
 
-    // if both 1's reject the line as a whole
-
-    // if any one is one and the other zero push to kodecheck and
-    // more conditions here if it is in to out or out to in
-
-    // if both zeros, this point is trivial accepts
-
-    int a = 1;
-    int b = 1;
-    bool c = a &b;
-    int d = a&b;
-if(d){
-    std::cout<<"c :"<<c<<" d : "<<d;
-
-}
-
-    if (k1 & k2) {
-        std::cout<<" "<<k1<<" and "<<k1;
-        draw=false;
-        break;
-        //trivial reject
-    } else {
-        if (k1 | k2) {
-            kodes.push(i);
-            if(k1==1) {
-                // out to in
-                kodeType.push(1);
-            } else{
-                kodeType.push(2);
-                //in to out
+    // do only non-trivial stuff
+  //  std::cout<<i;
+   // std::cout<<k0<<" "<<k1<<std::endl;
+    if(k0&k1){
+     //   std::cout<<"Do nothing";
+    }
+    else{
+        if(k0|k1){
+            if(k0>k1){
+                kodeType.push(0);
+                kodes.push(i);
             }
-
-        } else{
-            // accept
-            continue;
+            else{
+                kodeType.push(1);
+                kodes.push(i);
+            }
         }
     }
-   }
+}
 
-std::cout<<" draw is "<<draw;
-    if (draw) {
+///////////alpha calculations here///////////
+float amin = 0;
+float amax = 1.0;
+
+while(!kodeType.empty()){
+    int kodeIndex = kodes.top();
+    int kType = kodeType.top();
+
+    kodeType.pop();
+    kodes.pop();
+    float BC0 = BcoordPrev[kodeIndex];
+    float BC1= BcoordCurr[kodeIndex];
+    float alpha = BC0/(BC0-BC1);;
+
+    if(kType==0){
+        alpha>amin ? amin=alpha : amin= amin;
+    } else{
+        alpha<amax ? amax=alpha : amax= amax;
+    }
+}
+
+/////////adjust lines now////////
+lineHprev[0] = amin*lineHprev[0];
+lineHprev[1] = amin*lineHprev[1];
+lineHprev[2] = amin*lineHprev[2];
+lineHprev[3] = amin*lineHprev[3];
+
+lineHcurr[0] = amax*lineHcurr[0];
+lineHcurr[1] = amax*lineHcurr[1];
+lineHcurr[2] = amax*lineHcurr[2];
+lineHcurr[3] = amax*lineHcurr[3];
+
+std::cout<<"amin : "<<amin<<" amax : "<<amax<<std::endl;
+    if (make) {
         draw_line();
     }
-
-float amin;
-float amax;
-float alpha;
-
-// calculate
 }
 
 //void REDirect::draw_line(float lineHcurr[]){

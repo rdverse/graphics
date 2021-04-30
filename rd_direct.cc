@@ -595,7 +595,7 @@ void REDirect::line_b_coord_kode(float Bcoord[], int Bkode[], float lineH[]){
     Bcoord[4] = lineH[2];
     Bcoord[5] = lineH[2] - lineH[3];
 
-    for(int i=5;i>=0;i--){
+    for(int i=0;i<6;i++){
         //case negative
         //std::cout<<Bcoord[i]<<std::endl;
         if(Bcoord[i]<0){
@@ -621,19 +621,18 @@ int kodeCurr[6];
 int kodePrev[6];
 
 
-    line_b_coord_kode(BcoordCurr, kodeCurr, lineHcurr);
-    line_b_coord_kode(BcoordPrev, kodePrev, lineHprev);
-
-std::cout<<std::endl<<std::endl<<std::endl;
-std::cout<<std::endl<<"Testing the initial coordinates"<<std::endl;
-
-std::cout<<lineHcurr[0]<<" "<<lineHcurr[1]<<lineHcurr[2]<<" "<<lineHcurr[3]<<std::endl;
-std::cout<<BcoordCurr[0]<<" "<<BcoordCurr[1]<<" "<<BcoordCurr[2]<<" "<<BcoordCurr[3]<<" "<<BcoordCurr[4]<<" "<<BcoordCurr[5]<<std::endl;
-
-std::cout<<kodePrev[0]<<" "<<kodePrev[1]<<" "<<kodePrev[2]<<" "<<kodePrev[3]<<" "<<kodePrev[4]<<" "<<kodePrev[5]<<std::endl;
-std::cout<<kodeCurr[0]<<" "<<kodeCurr[1]<<" "<<kodeCurr[2]<<" "<<kodeCurr[3]<<" "<<kodeCurr[4]<<" "<<kodeCurr[5]<<std::endl;
-std::cout<<std::endl<<std::endl<<std::endl;
-
+line_b_coord_kode(BcoordCurr, kodeCurr, lineHcurr);
+line_b_coord_kode(BcoordPrev, kodePrev, lineHprev);
+//
+//std::cout<<std::endl<<std::endl<<std::endl;
+//std::cout<<std::endl<<"Testing the initial coordinates"<<std::endl;
+//
+//std::cout<<lineHcurr[0]<<" "<<lineHcurr[1]<<lineHcurr[2]<<" "<<lineHcurr[3]<<std::endl;
+//std::cout<<BcoordCurr[0]<<" "<<BcoordCurr[1]<<" "<<BcoordCurr[2]<<" "<<BcoordCurr[3]<<" "<<BcoordCurr[4]<<" "<<BcoordCurr[5]<<std::endl;
+//
+//std::cout<<kodePrev[0]<<" "<<kodePrev[1]<<" "<<kodePrev[2]<<" "<<kodePrev[3]<<" "<<kodePrev[4]<<" "<<kodePrev[5]<<std::endl;
+//std::cout<<kodeCurr[0]<<" "<<kodeCurr[1]<<" "<<kodeCurr[2]<<" "<<kodeCurr[3]<<" "<<kodeCurr[4]<<" "<<kodeCurr[5]<<std::endl;
+//std::cout<<std::endl<<std::endl<<std::endl;
 
 std::stack<int> kodes;
 
@@ -667,8 +666,12 @@ for(int i = 0; i<5;i++) {
 }
 
 ///////////alpha calculations here///////////
-float amin = 0;
+float amin = 0.0;
 float amax = 1.0;
+// I am not sure if the below flags are to be used, I checked my notes and the clipping paper, In both areas I did not find it.
+// I just felt it logically makes sense so included it, without it faced some issues.
+bool aminflag = false;
+bool amaxflag = false;
 
 while(!kodeType.empty()){
     int kodeIndex = kodes.top();
@@ -678,25 +681,37 @@ while(!kodeType.empty()){
     kodes.pop();
     float BC0 = BcoordPrev[kodeIndex];
     float BC1= BcoordCurr[kodeIndex];
-    float alpha = BC0/(BC0-BC1);;
+    float alpha = (BC0/(BC0-BC1));
 
+    std::cout<<kType;
     if(kType==0){
         alpha>amin ? amin=alpha : amin= amin;
+        aminflag=true;
     } else{
+        amaxflag=true;
         alpha<amax ? amax=alpha : amax= amax;
     }
 }
 
-/////////adjust lines now////////
-lineHprev[0] = amin*lineHprev[0];
-lineHprev[1] = amin*lineHprev[1];
-lineHprev[2] = amin*lineHprev[2];
-lineHprev[3] = amin*lineHprev[3];
+if(amin>amax){
+    float temp = amin;
+    amin=amax;
+    amax=temp;
+}
 
-lineHcurr[0] = amax*lineHcurr[0];
-lineHcurr[1] = amax*lineHcurr[1];
-lineHcurr[2] = amax*lineHcurr[2];
-lineHcurr[3] = amax*lineHcurr[3];
+/////////adjust lines now////////
+if(aminflag){
+    lineHprev[0] = amin*lineHprev[0];
+    lineHprev[1] = amin*lineHprev[1];
+    lineHprev[2] = amin*lineHprev[2];
+    lineHprev[3] = amin*lineHprev[3];
+}
+if(amaxflag){
+    lineHcurr[0] = amax*lineHcurr[0];
+    lineHcurr[1] = amax*lineHcurr[1];
+    lineHcurr[2] = amax*lineHcurr[2];
+    lineHcurr[3] = amax*lineHcurr[3];
+}
 
 std::cout<<"amin : "<<amin<<" amax : "<<amax<<std::endl;
     if (make) {
